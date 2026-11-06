@@ -450,7 +450,7 @@ Supuestos: trabajan el desarrollador y el agente; el agente produce, el desarrol
 
 - [x] **T01 (M) Repositorio y esqueleto.** Crea `backend/` (Laravel 12) y `frontend/` (Vite React TS), `.gitignore`, `README.md` con pasos de instalación, copia de esta guía como `AGENTS.md` y `CLAUDE.md`.
   *Aceptación:* `https://smartcart-api.test/up` responde 200; `npm run dev` abre una página en blanco con Tailwind activo.
-- [ ] **T02 (S) Base de datos.** Configura `.env` para MariaDB, crea `smartcart` y `smartcart_test`, verifica con `php artisan migrate:status`.
+- [x] **T02 (S) Base de datos.** Configura `.env` para MariaDB, crea `smartcart` y `smartcart_test`, verifica con `php artisan migrate:status`.
   *Aceptación:* conexión confirmada desde HeidiSQL y desde Laravel.
 - [ ] **T03 (S) Calidad.** Instala Pest, Pint, ESLint, Prettier y Vitest con un test de ejemplo en cada lado.
   *Aceptación:* todos los comandos de la sección 10 corren en verde.
@@ -536,6 +536,8 @@ Meta: recorrer el flujo completo con la interfaz y el panel de simulación.
 | Pagos y FEL | Integrar proveedor, simular | **Simular**. En un producto real se integraría un procesador de pagos y un certificador FEL autorizado por la SAT | Es lo primero a diseñar en una fase real |
 | Imágenes de producto | Archivos, emojis | **Emojis** en la demo, columna `image_url` lista para fotos reales | Reemplazar por fotos antes de un piloto |
 | Estilos del frontend | Tailwind v3, Tailwind v4 | **Tailwind v4** integrado con `@tailwindcss/vite` y tokens en `frontend/src/styles/tokens.css` | Revisar al introducir el sistema de componentes |
+| Configuración local | Valores separados por capa | **Backend en `https://smartcart-api.test`, frontend en `http://localhost:5173` y CORS limitado a `FRONTEND_URL`** | Cambiar ambos orígenes juntos si se publica el frontend |
+| Zona horaria | UTC, America/Guatemala | **America/Guatemala** para que la vigencia de ofertas use la hora local | Revisar si se agregan sucursales con distintas zonas |
 
 **Qué revisar si el sistema crece:** múltiples sucursales y carritos (tabla de tiendas), sincronización de catálogo con el supermercado, colas para facturación, observabilidad (logs estructurados y métricas), almacenamiento de imágenes, modo sin conexión con cola local de escaneos.
 
