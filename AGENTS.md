@@ -461,7 +461,7 @@ Meta: API de compra completa y probada, sin interfaz.
 
 - [x] **T04 (L) Migraciones y modelos** de la sección 5, relaciones, factories y casts de dinero.
   *Aceptación:* `migrate` crea todas las tablas con índices y claves foráneas; el diagrama coincide en HeidiSQL.
-- [ ] **T05 (M) Seeders:** categorías, 20 productos, ofertas, admin y cliente demo (sección 5.1).
+- [x] **T05 (M) Seeders:** categorías, dispositivo, 20 productos, ofertas, admin y cliente demo (sección 5.1).
   *Aceptación:* `migrate --seed` es repetible y todos los EAN pasan `Ean13::isValid`.
 - [ ] **T06 (M) `Ean13` y `PricingService`** con pruebas unitarias (incluye casos de redondeo del IVA).
   *Aceptación:* total Q85.25 produce IVA Q9.13 y subtotal Q76.12.
@@ -541,6 +541,7 @@ Meta: recorrer el flujo completo con la interfaz y el panel de simulación.
 | Pruebas PHP | PHPUnit 11, Pest 3, Pest 4 | **Pest 4.7.7 + Pest Laravel 4.1.0 + PHPUnit 12.5.33** por compatibilidad con Laravel 12 y PHP 8.4 | Revisar al actualizar Laravel o al resolver avisos de dependencias |
 | TypeScript | TypeScript 7, TypeScript 5 | **TypeScript 5.9.3** porque `typescript-eslint` aún no soporta TypeScript 7 | Subir cuando ESLint/TypeScript ESLint publique soporte estable |
 | Esquema T04 | Migración única, migraciones separadas | **11 tablas propias en migraciones ordenadas por dependencias; tablas framework conservadas** | Revisar índices y restricciones al agregar reglas de negocio |
+| Seeders T05 | Datos manuales, factories, `updateOrCreate` | **Seeder idempotente con catálogo demo fijo, `CART-07` y contraseña admin desde `SEED_ADMIN_PASSWORD`** | Revisar al agregar productos, ofertas o datos de otras sucursales |
 
 **Qué revisar si el sistema crece:** múltiples sucursales y carritos (tabla de tiendas), sincronización de catálogo con el supermercado, colas para facturación, observabilidad (logs estructurados y métricas), almacenamiento de imágenes, modo sin conexión con cola local de escaneos.
 
