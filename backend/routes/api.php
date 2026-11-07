@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\SessionController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
@@ -13,5 +14,13 @@ Route::prefix('v1')->group(function (): void {
             Route::post('logout', [AuthController::class, 'logout']);
             Route::get('me', [AuthController::class, 'me']);
         });
+    });
+
+    Route::middleware('auth:api')->group(function (): void {
+        Route::post('sessions', [SessionController::class, 'store']);
+        Route::get('sessions/current', [SessionController::class, 'current']);
+        Route::post('sessions/current/scan', [SessionController::class, 'scan']);
+        Route::patch('sessions/current/items/{item}', [SessionController::class, 'update']);
+        Route::delete('sessions/current/items/{item}', [SessionController::class, 'destroy']);
     });
 });

@@ -1,0 +1,69 @@
+@baseUrl = https://smartcart-api.test/api/v1
+@accessToken = pega-aqui-el-access-token-de-auth.http
+@barcode = 7401000000015
+@source = simulation
+@itemId = pega-aqui-el-id-del-item
+
+### Iniciar una sesión de compra
+POST {{baseUrl}}/sessions
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{}
+
+### Consultar la sesión activa
+GET {{baseUrl}}/sessions/current
+Authorization: Bearer {{accessToken}}
+
+### Escanear un producto desde el panel de simulación
+POST {{baseUrl}}/sessions/current/scan
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "barcode": "{{barcode}}",
+  "source": "{{source}}"
+}
+
+### Escanear el mismo producto otra vez (quantity = 2)
+POST {{baseUrl}}/sessions/current/scan
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "barcode": "{{barcode}}",
+  "source": "reader"
+}
+
+### Cambiar cantidad (1 a 99)
+PATCH {{baseUrl}}/sessions/current/items/{{itemId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "quantity": 3
+}
+
+### Eliminar una línea
+DELETE {{baseUrl}}/sessions/current/items/{{itemId}}
+Authorization: Bearer {{accessToken}}
+
+### EAN inválido (422 y evento invalid)
+POST {{baseUrl}}/sessions/current/scan
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "barcode": "123456789012",
+  "source": "simulation"
+}
+
+### Producto válido pero ausente del catálogo (404 y evento not_found)
+POST {{baseUrl}}/sessions/current/scan
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "barcode": "7401000000039",
+  "source": "simulation"
+}
