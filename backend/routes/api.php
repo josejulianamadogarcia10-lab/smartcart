@@ -19,6 +19,7 @@ Route::prefix('v1')->group(function (): void {
     Route::middleware('auth:api')->group(function (): void {
         Route::post('sessions', [SessionController::class, 'store']);
         Route::get('sessions/current', [SessionController::class, 'current']);
+        Route::put('sessions/current/budget', [SessionController::class, 'budget']);
         Route::post('sessions/current/scan', [SessionController::class, 'scan']);
         Route::patch('sessions/current/items/{item}', [SessionController::class, 'update']);
         Route::delete('sessions/current/items/{item}', [SessionController::class, 'destroy']);

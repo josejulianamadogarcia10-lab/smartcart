@@ -63,6 +63,52 @@ it('starts a session and returns an empty response with budget none', function (
         ->assertJsonPath('budget.level', 'none');
 });
 
+it('accepts a budget when starting a session and calculates its progress', function (): void {
+    $token = sessionToken($this->user);
+    $this->withToken($token)->postJson('/api/v1/sessions', ['budget' => '100.00'])
+        ->assertCreated()
+        ->assertJsonPath('budget.amount', '100.00')
+        ->assertJsonPath('budget.used_percent', 0)
+        ->assertJsonPath('budget.level', 'ok');
+
+    $session = ShoppingSession::where('user_id', $this->user->id)->firstOrFail();
+    CartItem::create(['shopping_session_id' => $session->id, 'product_id' => $this->product->id, 'quantity' => 1, 'unit_price' => '80.00']);
+
+    $this->withToken($token)->getJson('/api/v1/sessions/current')
+        ->assertOk()
+        ->assertJsonPath('budget.used_percent', 80)
+        ->assertJsonPath('budget.remaining', '20.00')
+        ->assertJsonPath('budget.level', 'warning');
+});
+
+it('marks a budget as exceeded at 100 percent without blocking scanning', function (): void {
+    $token = sessionToken($this->user);
+    $this->withToken($token)->postJson('/api/v1/sessions', ['budget' => '100.00'])->assertCreated();
+    $session = ShoppingSession::where('user_id', $this->user->id)->firstOrFail();
+    CartItem::create(['shopping_session_id' => $session->id, 'product_id' => $this->product->id, 'quantity' => 1, 'unit_price' => '100.00']);
+
+    $this->withToken($token)->getJson('/api/v1/sessions/current')
+        ->assertJsonPath('budget.used_percent', 100)
+        ->assertJsonPath('budget.level', 'exceeded');
+
+    $this->withToken($token)->postJson('/api/v1/sessions/current/scan', [
+        'barcode' => $this->promoProduct->barcode,
+        'source' => 'simulation',
+    ])->assertOk()->assertJsonPath('scan.result', 'added');
+});
+
+it('updates or clears the budget and rejects non-positive values', function (): void {
+    $token = sessionToken($this->user);
+    $this->withToken($token)->postJson('/api/v1/sessions')->assertCreated();
+
+    $this->withToken($token)->putJson('/api/v1/sessions/current/budget', ['budget' => '50.00'])
+        ->assertOk()->assertJsonPath('budget.amount', '50.00');
+    $this->withToken($token)->putJson('/api/v1/sessions/current/budget', ['budget' => null])
+        ->assertOk()->assertJsonPath('budget.level', 'none');
+    $this->withToken($token)->putJson('/api/v1/sessions/current/budget', ['budget' => '0'])
+        ->assertStatus(422)->assertJsonPath('errors.budget.0', 'El presupuesto debe ser mayor que Q0.00.');
+});
+
 it('cancels the previous active session on the same device', function (): void {
     $first = ShoppingSession::create([
         'user_id' => $this->user->id,

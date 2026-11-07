@@ -15,9 +15,9 @@ class CartService
 {
     public function __construct(private readonly DatabaseManager $database) {}
 
-    public function start(int $userId, string $deviceCode): ShoppingSession
+    public function start(int $userId, string $deviceCode, ?string $budget = null): ShoppingSession
     {
-        return $this->database->transaction(function () use ($userId, $deviceCode): ShoppingSession {
+        return $this->database->transaction(function () use ($userId, $deviceCode, $budget): ShoppingSession {
             $device = Device::where('code', $deviceCode)->where('active', true)->lockForUpdate()->firstOrFail();
 
             ShoppingSession::where('device_id', $device->id)
@@ -28,9 +28,17 @@ class CartService
                 'user_id' => $userId,
                 'device_id' => $device->id,
                 'status' => 'active',
+                'budget' => $budget,
                 'started_at' => now(),
             ]);
         });
+    }
+
+    public function updateBudget(ShoppingSession $session, ?string $budget): ShoppingSession
+    {
+        $session->update(['budget' => $budget]);
+
+        return $session->load(['cartItems.product.category', 'device']);
     }
 
     public function current(int $userId): ?ShoppingSession
@@ -146,6 +154,8 @@ class CartService
 
         $pricing = app(PricingService::class)->calculate($this->fromCents($totalCents));
 
+        $budget = $this->budgetRepresentation($session->budget, $totalCents);
+
         return [
             'id' => $session->id,
             'status' => $session->status,
@@ -156,12 +166,7 @@ class CartService
                 'vat' => $pricing['vat'],
                 'total' => $pricing['total'],
             ],
-            'budget' => [
-                'amount' => null,
-                'used_percent' => 0,
-                'remaining' => null,
-                'level' => 'none',
-            ],
+            'budget' => $budget,
         ];
     }
 
@@ -190,6 +195,40 @@ class CartService
 
     private function fromCents(int $cents): string
     {
-        return sprintf('%d.%02d', intdiv($cents, 100), $cents % 100);
+        $sign = $cents < 0 ? '-' : '';
+        $absolute = abs($cents);
+
+        return sprintf('%s%d.%02d', $sign, intdiv($absolute, 100), $absolute % 100);
+    }
+
+    private function budgetRepresentation(?string $budget, int $totalCents): array
+    {
+        if ($budget === null) {
+            return ['amount' => null, 'used_percent' => 0, 'remaining' => null, 'level' => 'none'];
+        }
+
+        $budgetCents = $this->toCents($budget);
+        $usedPercent = intdiv($totalCents * 100, $budgetCents);
+        $warnRatio = $this->decimalRatio((string) config('cart.budget_warn', '0.8'));
+        $level = $totalCents >= $budgetCents
+            ? 'exceeded'
+            : ($totalCents * $warnRatio[1] >= $budgetCents * $warnRatio[0] ? 'warning' : 'ok');
+
+        return [
+            'amount' => $this->fromCents($budgetCents),
+            'used_percent' => $usedPercent,
+            'remaining' => $this->fromCents($budgetCents - $totalCents),
+            'level' => $level,
+        ];
+    }
+
+    /** @return array{0:int,1:int} */
+    private function decimalRatio(string $value): array
+    {
+        [$whole, $fraction] = array_pad(explode('.', $value, 2), 2, '');
+        $fraction = rtrim($fraction, '0');
+        $denominator = 10 ** strlen($fraction);
+
+        return [(int) $whole * $denominator + (int) ($fraction === '' ? 0 : $fraction), $denominator];
     }
 }

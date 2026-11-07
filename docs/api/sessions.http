@@ -1,5 +1,5 @@
 @baseUrl = https://smartcart-api.test/api/v1
-@accessToken = pega-aqui-el-access-token-de-auth.http
+@accessToken = pega-aqui-el-access-token
 @barcode = 7401000000015
 @source = simulation
 @itemId = pega-aqui-el-id-del-item
@@ -11,9 +11,36 @@ Content-Type: application/json
 
 {}
 
+### Iniciar con presupuesto Q100
+POST {{baseUrl}}/sessions
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "budget": "100.00"
+}
+
 ### Consultar la sesión activa
 GET {{baseUrl}}/sessions/current
 Authorization: Bearer {{accessToken}}
+
+### Definir o cambiar presupuesto
+PUT {{baseUrl}}/sessions/current/budget
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "budget": "100.00"
+}
+
+### Quitar presupuesto
+PUT {{baseUrl}}/sessions/current/budget
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "budget": null
+}
 
 ### Escanear un producto desde el panel de simulación
 POST {{baseUrl}}/sessions/current/scan

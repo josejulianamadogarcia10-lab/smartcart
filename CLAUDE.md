@@ -469,7 +469,7 @@ Meta: API de compra completa y probada, sin interfaz.
   *Aceptación:* pruebas de feature para cada ruta, incluido token expirado e inválido.
 - [x] **T08 (L) Sesiones y escaneo:** `POST /sessions`, `GET /sessions/current`, `POST /scan`, `PATCH` y `DELETE` de ítems, `scan_events`, policies.
   *Aceptación:* escanear dos veces el mismo código da cantidad 2; código inválido da 422; código ajeno a la sesión da 403.
-- [ ] **T09 (M) Presupuesto y totales** en la respuesta de sesión (`level`, `used_percent`).
+- [x] **T09 (M) Presupuesto y totales** en la respuesta de sesión (`level`, `used_percent`).
   *Aceptación:* con presupuesto Q100 y total Q85.25 el nivel es `warning` y el porcentaje 85.
 - [ ] **T10 (M) Ofertas:** `PromotionService`, `GET offers`, `POST offers/{id}/add`.
   *Aceptación:* las ofertas devueltas no incluyen productos que ya están en el carrito.

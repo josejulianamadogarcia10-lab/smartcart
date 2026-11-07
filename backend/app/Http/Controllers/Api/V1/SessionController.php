@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\BudgetRequest;
 use App\Http\Requests\Api\V1\ScanRequest;
 use App\Http\Requests\Api\V1\UpdateCartItemRequest;
 use App\Models\CartItem;
@@ -18,7 +19,7 @@ class SessionController extends Controller
 {
     public function __construct(private readonly CartService $cartService) {}
 
-    public function store(): JsonResponse
+    public function store(BudgetRequest $request): JsonResponse
     {
         $deviceCode = JWTAuth::parseToken()->getPayload()->get('device');
 
@@ -26,9 +27,19 @@ class SessionController extends Controller
             return response()->json(['message' => 'El token no identifica un carrito.'], 422);
         }
 
-        $session = $this->cartService->start(auth('api')->id(), $deviceCode);
+        $session = $this->cartService->start(auth('api')->id(), $deviceCode, $request->input('budget'));
 
         return response()->json($this->cartService->representation($session), 201);
+    }
+
+    public function budget(BudgetRequest $request): JsonResponse
+    {
+        $session = $this->currentSession();
+        $this->authorizeSession('update', $session);
+        $budget = $request->exists('budget') ? $request->input('budget') : null;
+        $session = $this->cartService->updateBudget($session, $budget);
+
+        return response()->json($this->cartService->representation($session));
     }
 
     public function current(): JsonResponse
