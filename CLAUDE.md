@@ -452,7 +452,7 @@ Supuestos: trabajan el desarrollador y el agente; el agente produce, el desarrol
   *Aceptación:* `https://smartcart-api.test/up` responde 200; `npm run dev` abre una página en blanco con Tailwind activo.
 - [x] **T02 (S) Base de datos.** Configura `.env` para MariaDB, crea `smartcart` y `smartcart_test`, verifica con `php artisan migrate:status`.
   *Aceptación:* conexión confirmada desde HeidiSQL y desde Laravel.
-- [ ] **T03 (S) Calidad.** Instala Pest, Pint, ESLint, Prettier y Vitest con un test de ejemplo en cada lado.
+- [x] **T03 (S) Calidad.** Instala Pest, Pint, ESLint, Prettier y Vitest con un test de ejemplo en cada lado.
   *Aceptación:* todos los comandos de la sección 10 corren en verde.
 
 ### Sprint 1: backend base (semanas 1 y 2)
@@ -538,6 +538,8 @@ Meta: recorrer el flujo completo con la interfaz y el panel de simulación.
 | Estilos del frontend | Tailwind v3, Tailwind v4 | **Tailwind v4** integrado con `@tailwindcss/vite` y tokens en `frontend/src/styles/tokens.css` | Revisar al introducir el sistema de componentes |
 | Configuración local | Valores separados por capa | **Backend en `https://smartcart-api.test`, frontend en `http://localhost:5173` y CORS limitado a `FRONTEND_URL`** | Cambiar ambos orígenes juntos si se publica el frontend |
 | Zona horaria | UTC, America/Guatemala | **America/Guatemala** para que la vigencia de ofertas use la hora local | Revisar si se agregan sucursales con distintas zonas |
+| Pruebas PHP | PHPUnit 11, Pest 3, Pest 4 | **Pest 4.7.7 + Pest Laravel 4.1.0 + PHPUnit 12.5.33** por compatibilidad con Laravel 12 y PHP 8.4 | Revisar al actualizar Laravel o al resolver avisos de dependencias |
+| TypeScript | TypeScript 7, TypeScript 5 | **TypeScript 5.9.3** porque `typescript-eslint` aún no soporta TypeScript 7 | Subir cuando ESLint/TypeScript ESLint publique soporte estable |
 
 **Qué revisar si el sistema crece:** múltiples sucursales y carritos (tabla de tiendas), sincronización de catálogo con el supermercado, colas para facturación, observabilidad (logs estructurados y métricas), almacenamiento de imágenes, modo sin conexión con cola local de escaneos.
 

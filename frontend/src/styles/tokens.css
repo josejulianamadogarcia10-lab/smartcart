@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
   --color-brand-50: #f0fdfa;
@@ -16,13 +16,13 @@
   --color-ink: #0f172a;
   --color-muted: #64748b;
   --color-surface: #f1f5f9;
-  --font-sans: Calibri, Carlito, "Segoe UI", system-ui, sans-serif;
+  --font-sans: Calibri, Carlito, 'Segoe UI', system-ui, sans-serif;
   --radius-card: 22px;
   --radius-btn: 20px;
 }
 
 :root {
-  font-family: Calibri, Carlito, "Segoe UI", system-ui, sans-serif;
+  font-family: Calibri, Carlito, 'Segoe UI', system-ui, sans-serif;
   color: #0f172a;
   background: #f1f5f9;
   font-synthesis: none;
