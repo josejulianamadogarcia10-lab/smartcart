@@ -1,0 +1,57 @@
+@baseUrl = https://smartcart-api.test/api/v1
+@deviceCode = CART-07
+@qrCode = SC-DEMO-0001
+@email = admin@smartcart.test
+@adminPassword = <SEED_ADMIN_PASSWORD_LOCAL>
+@accessToken = pega-aqui-el-access-token
+
+### Iniciar como invitado
+POST {{baseUrl}}/auth/guest
+Content-Type: application/json
+
+{
+  "device_code": "{{deviceCode}}"
+}
+
+### Iniciar con QR demo
+POST {{baseUrl}}/auth/qr
+Content-Type: application/json
+
+{
+  "qr_code": "{{qrCode}}",
+  "device_code": "{{deviceCode}}"
+}
+
+### Login admin
+# Sustituye <SEED_ADMIN_PASSWORD_LOCAL> por el valor local de SEED_ADMIN_PASSWORD.
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{adminPassword}}"
+}
+
+### Datos del usuario autenticado
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{accessToken}}
+
+### Renovar token
+POST {{baseUrl}}/auth/refresh
+Authorization: Bearer {{accessToken}}
+
+### Cerrar sesión e invalidar token
+POST {{baseUrl}}/auth/logout
+Authorization: Bearer {{accessToken}}
+
+### Debe responder 401 después del logout
+POST {{baseUrl}}/auth/refresh
+Authorization: Bearer {{accessToken}}
+
+### Validación: dispositivo inexistente (debe responder 422)
+POST {{baseUrl}}/auth/guest
+Content-Type: application/json
+
+{
+  "device_code": "CART-99"
+}

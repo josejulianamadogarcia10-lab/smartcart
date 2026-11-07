@@ -465,7 +465,7 @@ Meta: API de compra completa y probada, sin interfaz.
   *Aceptación:* `migrate --seed` es repetible y todos los EAN pasan `Ean13::isValid`.
 - [x] **T06 (M) `Ean13` y `PricingService`** con pruebas unitarias (incluye casos de redondeo del IVA).
   *Aceptación:* total Q85.25 produce IVA Q9.13 y subtotal Q76.12.
-- [ ] **T07 (L) Autenticación JWT:** guest, qr, login, refresh, logout, me, claims `role` y `device`, throttle.
+- [x] **T07 (L) Autenticación JWT:** guest, qr, login, refresh, logout, me, claims `role` y `device`, throttle.
   *Aceptación:* pruebas de feature para cada ruta, incluido token expirado e inválido.
 - [ ] **T08 (L) Sesiones y escaneo:** `POST /sessions`, `GET /sessions/current`, `POST /scan`, `PATCH` y `DELETE` de ítems, `scan_events`, policies.
   *Aceptación:* escanear dos veces el mismo código da cantidad 2; código inválido da 422; código ajeno a la sesión da 403.
@@ -543,6 +543,7 @@ Meta: recorrer el flujo completo con la interfaz y el panel de simulación.
 | Esquema T04 | Migración única, migraciones separadas | **11 tablas propias en migraciones ordenadas por dependencias; tablas framework conservadas** | Revisar índices y restricciones al agregar reglas de negocio |
 | Seeders T05 | Datos manuales, factories, `updateOrCreate` | **Seeder idempotente con catálogo demo fijo, `CART-07` y contraseña admin desde `SEED_ADMIN_PASSWORD`** | Revisar al agregar productos, ofertas o datos de otras sucursales |
 | Cálculo T06 | `float`, BCMath, centavos enteros | **Centavos enteros y redondeo half up para evitar errores de precisión monetaria** | Revisar si se requieren monedas o tasas con más de dos decimales |
+| Autenticación T07 | Sanctum, Passport, JWT | **JWT con `php-open-source-saver/jwt-auth` v2.10.0, guard `api`, blacklist activa y claims de rol/dispositivo** | Revisar rotación de secreto y almacenamiento de tokens si cambia el despliegue |
 
 **Qué revisar si el sistema crece:** múltiples sucursales y carritos (tabla de tiendas), sincronización de catálogo con el supermercado, colas para facturación, observabilidad (logs estructurados y métricas), almacenamiento de imágenes, modo sin conexión con cola local de escaneos.
 
