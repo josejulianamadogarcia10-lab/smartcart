@@ -5,6 +5,7 @@ use App\Models\Device;
 use App\Models\Product;
 use App\Models\Promotion;
 use App\Models\User;
+use App\Support\Ean13;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -26,15 +27,7 @@ it('seeds the demo catalog and users with valid EAN-13 codes', function (): void
         ->and(User::where('qr_code', 'SC-DEMO-0001')->value('role'))->toBe('customer');
 
     Product::pluck('barcode')->each(function (string $barcode): void {
-        expect($barcode)->toMatch('/^\d{13}$/');
-
-        $digits = array_map('intval', str_split($barcode));
-        $sum = array_sum(array_map(
-            fn (int $index): int => $digits[$index] * (in_array($index, [1, 3, 5, 7, 9, 11], true) ? 3 : 1),
-            range(0, 11),
-        ));
-
-        expect((10 - ($sum % 10)) % 10)->toBe($digits[12]);
+        expect(Ean13::isValid($barcode))->toBeTrue();
     });
 });
 

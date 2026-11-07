@@ -463,7 +463,7 @@ Meta: API de compra completa y probada, sin interfaz.
   *Aceptación:* `migrate` crea todas las tablas con índices y claves foráneas; el diagrama coincide en HeidiSQL.
 - [x] **T05 (M) Seeders:** categorías, dispositivo, 20 productos, ofertas, admin y cliente demo (sección 5.1).
   *Aceptación:* `migrate --seed` es repetible y todos los EAN pasan `Ean13::isValid`.
-- [ ] **T06 (M) `Ean13` y `PricingService`** con pruebas unitarias (incluye casos de redondeo del IVA).
+- [x] **T06 (M) `Ean13` y `PricingService`** con pruebas unitarias (incluye casos de redondeo del IVA).
   *Aceptación:* total Q85.25 produce IVA Q9.13 y subtotal Q76.12.
 - [ ] **T07 (L) Autenticación JWT:** guest, qr, login, refresh, logout, me, claims `role` y `device`, throttle.
   *Aceptación:* pruebas de feature para cada ruta, incluido token expirado e inválido.
@@ -542,6 +542,7 @@ Meta: recorrer el flujo completo con la interfaz y el panel de simulación.
 | TypeScript | TypeScript 7, TypeScript 5 | **TypeScript 5.9.3** porque `typescript-eslint` aún no soporta TypeScript 7 | Subir cuando ESLint/TypeScript ESLint publique soporte estable |
 | Esquema T04 | Migración única, migraciones separadas | **11 tablas propias en migraciones ordenadas por dependencias; tablas framework conservadas** | Revisar índices y restricciones al agregar reglas de negocio |
 | Seeders T05 | Datos manuales, factories, `updateOrCreate` | **Seeder idempotente con catálogo demo fijo, `CART-07` y contraseña admin desde `SEED_ADMIN_PASSWORD`** | Revisar al agregar productos, ofertas o datos de otras sucursales |
+| Cálculo T06 | `float`, BCMath, centavos enteros | **Centavos enteros y redondeo half up para evitar errores de precisión monetaria** | Revisar si se requieren monedas o tasas con más de dos decimales |
 
 **Qué revisar si el sistema crece:** múltiples sucursales y carritos (tabla de tiendas), sincronización de catálogo con el supermercado, colas para facturación, observabilidad (logs estructurados y métricas), almacenamiento de imágenes, modo sin conexión con cola local de escaneos.
 
