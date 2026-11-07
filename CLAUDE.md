@@ -459,7 +459,7 @@ Supuestos: trabajan el desarrollador y el agente; el agente produce, el desarrol
 
 Meta: API de compra completa y probada, sin interfaz.
 
-- [ ] **T04 (L) Migraciones y modelos** de la sección 5, relaciones, factories y casts de dinero.
+- [x] **T04 (L) Migraciones y modelos** de la sección 5, relaciones, factories y casts de dinero.
   *Aceptación:* `migrate` crea todas las tablas con índices y claves foráneas; el diagrama coincide en HeidiSQL.
 - [ ] **T05 (M) Seeders:** categorías, 20 productos, ofertas, admin y cliente demo (sección 5.1).
   *Aceptación:* `migrate --seed` es repetible y todos los EAN pasan `Ean13::isValid`.
@@ -540,6 +540,7 @@ Meta: recorrer el flujo completo con la interfaz y el panel de simulación.
 | Zona horaria | UTC, America/Guatemala | **America/Guatemala** para que la vigencia de ofertas use la hora local | Revisar si se agregan sucursales con distintas zonas |
 | Pruebas PHP | PHPUnit 11, Pest 3, Pest 4 | **Pest 4.7.7 + Pest Laravel 4.1.0 + PHPUnit 12.5.33** por compatibilidad con Laravel 12 y PHP 8.4 | Revisar al actualizar Laravel o al resolver avisos de dependencias |
 | TypeScript | TypeScript 7, TypeScript 5 | **TypeScript 5.9.3** porque `typescript-eslint` aún no soporta TypeScript 7 | Subir cuando ESLint/TypeScript ESLint publique soporte estable |
+| Esquema T04 | Migración única, migraciones separadas | **11 tablas propias en migraciones ordenadas por dependencias; tablas framework conservadas** | Revisar índices y restricciones al agregar reglas de negocio |
 
 **Qué revisar si el sistema crece:** múltiples sucursales y carritos (tabla de tiendas), sincronización de catálogo con el supermercado, colas para facturación, observabilidad (logs estructurados y métricas), almacenamiento de imágenes, modo sin conexión con cola local de escaneos.
 
