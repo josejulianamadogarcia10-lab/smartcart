@@ -247,6 +247,12 @@ Si `DEMO_MODE=true`, el body puede incluir:
 `force_check` fuerza `requires_check=true`. Ambos campos se respetan
 únicamente con `DEMO_MODE=true`; fuera de ese modo no alteran el flujo de pago.
 
+El panel de simulación del frontend guarda `force_check` y `simulate_failure`
+como banderas de la interfaz. T20 las enviará en el body de checkout con esos
+mismos nombres; no crean endpoints ni modifican el esquema. Reiniciar la demo
+usa el `POST /sessions` existente para cancelar la sesión activa del dispositivo,
+limpia ambas banderas y vuelve al inicio.
+
 `GET /orders/{order}/exit` devuelve:
 
 ```json

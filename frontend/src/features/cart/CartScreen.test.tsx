@@ -91,6 +91,22 @@ describe('CartScreen', () => {
     expect(screen.getByText('4 productos')).toBeInTheDocument()
   })
 
+  it('usa el singular cuando solo hay un producto', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          ...session,
+          items: [session.items[0]],
+          totals: { ...session.totals, items_count: 1 },
+        }),
+        { status: 200 },
+      ),
+    )
+    renderCart()
+
+    expect(await screen.findByText('1 producto')).toBeInTheDocument()
+  })
+
   it('envía el cambio de cantidad y actualiza la línea de inmediato', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch')
     fetchMock.mockResolvedValueOnce(
