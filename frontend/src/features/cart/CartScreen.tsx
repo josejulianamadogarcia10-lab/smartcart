@@ -209,6 +209,14 @@ export function CartScreen() {
     navigate('/')
   }
 
+  const setDemoBudget = async () => {
+    const data = await apiFetch<Session>('/sessions/current/budget', {
+      method: 'PUT',
+      body: JSON.stringify({ budget: '100.00' }),
+    })
+    queryClient.setQueryData(sessionKey, data)
+  }
+
   return (
     <>
       <CartLayout>
@@ -272,7 +280,7 @@ export function CartScreen() {
               </p>
             )}
           </section>
-          <aside className="grid content-start gap-5">
+          <aside className="grid content-start gap-5 self-start xl:sticky xl:top-5">
             <Card className="!bg-brand-700 !text-white">
               <p className="text-2xl">Total a pagar</p>
               <p className="mt-2 text-6xl font-black">
@@ -319,6 +327,7 @@ export function CartScreen() {
       </CartLayout>
       {demoMode && (
         <DemoPanel
+          onBudget={setDemoBudget}
           onReset={resetDemo}
           onScan={(barcode) =>
             scanMutation

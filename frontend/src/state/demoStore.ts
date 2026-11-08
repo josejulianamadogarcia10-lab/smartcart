@@ -27,12 +27,7 @@ export const useDemoStore = create<DemoState>((set) => ({
   scenarioVersion: 0,
   setReaderConnected: (readerConnected) => set({ readerConnected }),
   togglePanel: () => set((state) => ({ panelOpen: !state.panelOpen })),
-  closePanel: () =>
-    set((state) => ({
-      panelOpen: false,
-      scenarioRunning: false,
-      scenarioVersion: state.scenarioVersion + 1,
-    })),
+  closePanel: () => set({ panelOpen: false }),
   toggleForceCheck: () => set((state) => ({ forceCheck: !state.forceCheck })),
   toggleSimulateFailure: () =>
     set((state) => ({ simulateFailure: !state.simulateFailure })),

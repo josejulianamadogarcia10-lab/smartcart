@@ -15,9 +15,15 @@ describe('DemoPanel', () => {
   })
 
   it('muestra los 20 productos y conserva las banderas de checkout', () => {
-    render(<DemoPanel onScan={vi.fn()} onReset={vi.fn()} />)
+    render(
+      <DemoPanel
+        onBudget={vi.fn().mockResolvedValue(undefined)}
+        onScan={vi.fn()}
+        onReset={vi.fn()}
+      />,
+    )
 
-    expect(screen.getAllByRole('button')).toHaveLength(24)
+    expect(screen.getAllByRole('button')).toHaveLength(25)
     fireEvent.click(screen.getByRole('checkbox', { name: 'Forzar revisión' }))
     fireEvent.click(
       screen.getByRole('checkbox', { name: 'Forzar fallo de pago' }),
@@ -29,7 +35,13 @@ describe('DemoPanel', () => {
 
   it('permite escanear un código desde el formulario demo', async () => {
     const onScan = vi.fn().mockResolvedValue(undefined)
-    render(<DemoPanel onScan={onScan} onReset={vi.fn()} />)
+    render(
+      <DemoPanel
+        onBudget={vi.fn().mockResolvedValue(undefined)}
+        onScan={onScan}
+        onReset={vi.fn()}
+      />,
+    )
 
     fireEvent.change(screen.getByLabelText('Probar un código'), {
       target: { value: '7401000000015' },

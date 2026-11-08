@@ -7,13 +7,14 @@ import { useDemoStore } from '../../state/demoStore'
 
 interface DemoPanelProps {
   onScan: (barcode: string) => Promise<void>
+  onBudget: () => Promise<void>
   onReset: () => Promise<void>
 }
 
 const wait = (milliseconds: number) =>
   new Promise<void>((resolve) => window.setTimeout(resolve, milliseconds))
 
-export function DemoPanel({ onScan, onReset }: DemoPanelProps) {
+export function DemoPanel({ onBudget, onScan, onReset }: DemoPanelProps) {
   const [barcode, setBarcode] = useState('')
   const [error, setError] = useState<string | null>(null)
   const panelOpen = useDemoStore((state) => state.panelOpen)
@@ -46,11 +47,12 @@ export function DemoPanel({ onScan, onReset }: DemoPanelProps) {
   const runScenario = async () => {
     setError(null)
     startScenario()
+    closePanel()
     const version = useDemoStore.getState().scenarioVersion
     try {
       for (const scenarioBarcode of scenarioBarcodes) {
         const current = useDemoStore.getState()
-        if (!current.panelOpen || current.scenarioVersion !== version) return
+        if (current.scenarioVersion !== version) return
         await onScan(scenarioBarcode)
         await wait(1200)
       }
@@ -83,6 +85,15 @@ export function DemoPanel({ onScan, onReset }: DemoPanelProps) {
     }
   }
 
+  const setBudget = async () => {
+    setError(null)
+    try {
+      await onBudget()
+    } catch {
+      setError('No pudimos definir el presupuesto.')
+    }
+  }
+
   return (
     <Card className="fixed inset-y-4 right-4 z-20 flex w-[min(440px,calc(100vw-2rem))] flex-col overflow-y-auto border-2 border-brand-500 p-5 shadow-2xl">
       <div className="flex items-center justify-between gap-4">
@@ -100,7 +111,26 @@ export function DemoPanel({ onScan, onReset }: DemoPanelProps) {
         </button>
       </div>
 
-      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+      <div className="mt-5 grid gap-3 sm:grid-cols-3">
+        <Button disabled={scenarioRunning} onClick={() => void runScenario()}>
+          {scenarioRunning ? 'Escenario en curso…' : 'Escenario completo'}
+        </Button>
+        <Button disabled={scenarioRunning} onClick={() => void setBudget()}>
+          Definir presupuesto Q100
+        </Button>
+        <Button
+          disabled={scenarioRunning}
+          onClick={() => void reset()}
+          variant="secondary"
+        >
+          <span className="flex items-center justify-center gap-2">
+            <RotateCcw size={23} />
+            Reiniciar demo
+          </span>
+        </Button>
+      </div>
+
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
         <label className="flex min-h-14 items-center justify-between gap-3 rounded-btn bg-surface px-4 text-lg font-bold text-ink">
           Forzar revisión
           <input
@@ -122,10 +152,6 @@ export function DemoPanel({ onScan, onReset }: DemoPanelProps) {
           />
         </label>
       </div>
-
-      <Button disabled={scenarioRunning} onClick={() => void runScenario()}>
-        {scenarioRunning ? 'Escenario en curso…' : 'Escenario completo'}
-      </Button>
 
       <form
         className="mt-3 grid gap-3"
@@ -162,22 +188,13 @@ export function DemoPanel({ onScan, onReset }: DemoPanelProps) {
             <span aria-hidden="true" className="text-2xl">
               {product.emoji}
             </span>
-            <span className="min-w-0 truncate">{product.name}</span>
+            <span className="min-w-0 whitespace-normal break-words leading-snug">
+              {product.name}
+            </span>
           </button>
         ))}
       </div>
 
-      <Button
-        className="mt-4"
-        disabled={scenarioRunning}
-        onClick={() => void reset()}
-        variant="secondary"
-      >
-        <span className="flex items-center justify-center gap-2">
-          <RotateCcw size={23} />
-          Reiniciar demo
-        </span>
-      </Button>
       {error && <p className="mt-3 text-lg font-bold text-danger">{error}</p>}
     </Card>
   )
