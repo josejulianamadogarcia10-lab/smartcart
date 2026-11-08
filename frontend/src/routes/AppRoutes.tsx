@@ -1,12 +1,15 @@
 import type { ReactNode } from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { useState } from 'react'
+import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
+import { QrCode, UserRound } from 'lucide-react'
+import { QRCodeSVG } from 'qrcode.react'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
 import { CartLine } from '../components/CartLine'
 import { DonutProgress } from '../components/DonutProgress'
 import { TopBar } from '../components/TopBar'
 import type { Item } from '../api/types'
-import { tokenStorage } from '../api/client'
+import { apiFetch, tokenStorage } from '../api/client'
 
 const demoItem: Item = {
   id: 1,
@@ -30,13 +33,128 @@ function Page({ title, children }: { title: string; children?: ReactNode }) {
   )
 }
 function Home() {
+  const navigate = useNavigate()
+  const [loading, setLoading] = useState<'guest' | 'qr' | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [lastMode, setLastMode] = useState<'guest' | 'qr'>('guest')
+
+  const startPurchase = async (mode: 'guest' | 'qr') => {
+    setLastMode(mode)
+    setLoading(mode)
+    setError(null)
+    try {
+      const auth = await apiFetch<{ access_token: string }>(
+        mode === 'guest' ? '/auth/guest' : '/auth/qr',
+        {
+          method: 'POST',
+          body: JSON.stringify(
+            mode === 'guest'
+              ? { device_code: 'CART-07' }
+              : { qr_code: 'SC-DEMO-0001', device_code: 'CART-07' },
+          ),
+          skipRefresh: true,
+        },
+      )
+      tokenStorage.set(auth.access_token)
+      await apiFetch('/sessions', { method: 'POST', body: '{}' })
+      navigate('/cart')
+    } catch (caught) {
+      const message = caught instanceof Error ? caught.message : ''
+      setError(
+        message.includes('Failed to fetch') || message.includes('Network')
+          ? 'No pudimos conectar con el servidor'
+          : message,
+      )
+    } finally {
+      setLoading(null)
+    }
+  }
+
   return (
-    <Page title="Bienvenido a SmartCart">
-      <Card>
-        <p className="text-xl text-muted">Inicia una compra para comenzar.</p>
-        <Button className="mt-6">Iniciar como invitado</Button>
-      </Card>
-    </Page>
+    <>
+      <TopBar />
+      <main className="grid min-h-[calc(100vh-88px)] gap-6 bg-surface px-8 py-7 lg:grid-cols-[1.7fr_1fr]">
+        <Card className="flex flex-col justify-center bg-gradient-to-br from-white to-brand-100 px-10 py-12 lg:px-10">
+          <p className="text-2xl font-bold text-brand-700">Compra sin filas</p>
+          <h1 className="mt-6 max-w-xl text-6xl font-black leading-[1.05] text-ink">
+            ¡Bienvenido a SmartCart!
+          </h1>
+          <p className="mt-7 text-2xl text-muted">
+            Escanea, controla tu gasto y paga sin hacer fila.
+          </p>
+          <div className="mt-8 grid gap-5">
+            <Button
+              disabled={loading !== null}
+              onClick={() => void startPurchase('qr')}
+            >
+              <span className="flex items-center justify-center gap-3">
+                <QrCode size={30} />
+                {loading === 'qr'
+                  ? 'Conectando…'
+                  : 'Iniciar con el QR de mi app'}
+              </span>
+            </Button>
+            <Button
+              variant="secondary"
+              disabled={loading !== null}
+              onClick={() => void startPurchase('guest')}
+              className="border-2 border-brand-500 text-brand-700 shadow-none"
+            >
+              <span className="flex items-center justify-center gap-3">
+                <UserRound size={30} />
+                {loading === 'guest' ? 'Conectando…' : 'Comprar como invitado'}
+              </span>
+            </Button>
+          </div>
+          {error && (
+            <div
+              role="alert"
+              className="mt-6 flex items-center justify-between gap-4 rounded-card border-2 border-danger bg-white p-4 text-lg font-bold text-danger"
+            >
+              <span>{error}</span>
+              <button
+                className="underline"
+                onClick={() => void startPurchase(lastMode)}
+              >
+                Reintentar
+              </button>
+            </div>
+          )}
+        </Card>
+        <Card className="flex flex-col items-center justify-center px-8 py-10">
+          <h2 className="text-2xl font-black text-ink">
+            Muestra tu QR al lector
+          </h2>
+          <div className="mt-5 rounded-card border-4 border-surface bg-white p-3">
+            <QRCodeSVG
+              value="SC-DEMO-0001"
+              size={220}
+              fgColor="var(--color-ink)"
+            />
+          </div>
+          <ol className="mt-7 grid w-full max-w-sm gap-4 text-xl text-ink">
+            <li className="flex items-center gap-4">
+              <span className="grid size-11 place-items-center rounded-full bg-brand-700 font-black text-white">
+                1
+              </span>
+              Abre la app del súper
+            </li>
+            <li className="flex items-center gap-4">
+              <span className="grid size-11 place-items-center rounded-full bg-brand-700 font-black text-white">
+                2
+              </span>
+              Muestra tu código QR
+            </li>
+            <li className="flex items-center gap-4">
+              <span className="grid size-11 place-items-center rounded-full bg-brand-700 font-black text-white">
+                3
+              </span>
+              ¡Empieza a comprar!
+            </li>
+          </ol>
+        </Card>
+      </main>
+    </>
   )
 }
 function Cart() {

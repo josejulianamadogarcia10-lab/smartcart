@@ -15,7 +15,7 @@ describe('AppRoutes', () => {
     )
 
     expect(
-      screen.getByRole('heading', { name: 'Bienvenido a SmartCart' }),
+      screen.getByRole('heading', { name: '¡Bienvenido a SmartCart!' }),
     ).toBeInTheDocument()
   })
 })

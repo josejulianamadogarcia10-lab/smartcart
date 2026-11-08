@@ -37,17 +37,18 @@ const requestRefresh = async (): Promise<string | null> => {
 
 export async function apiFetch<T>(
   path: string,
-  init: RequestInit = {},
+  init: RequestInit & { skipRefresh?: boolean } = {},
 ): Promise<T> {
+  const { skipRefresh = false, ...requestInit } = init
   const makeRequest = (token: string | null) => {
-    const headers = new Headers(init.headers)
+    const headers = new Headers(requestInit.headers)
     headers.set('Content-Type', 'application/json')
     if (token) headers.set('Authorization', `Bearer ${token}`)
-    return fetch(`${apiUrl}${path}`, { ...init, headers })
+    return fetch(`${apiUrl}${path}`, { ...requestInit, headers })
   }
 
   let response = await makeRequest(tokenStorage.get())
-  if (response.status === 401) {
+  if (response.status === 401 && !skipRefresh) {
     const refreshedToken = await requestRefresh()
     if (!refreshedToken) {
       tokenStorage.clear()

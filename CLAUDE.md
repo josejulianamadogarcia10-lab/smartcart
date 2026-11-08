@@ -486,7 +486,7 @@ Meta: recorrer el flujo completo con la interfaz y el panel de simulación.
 
 - [x] **T13 (M) Base del frontend:** tokens, `TopBar`, `Button`, `Chip`, `Card`, cliente HTTP con interceptor de refresh, rutas.
   *Aceptación:* componentes visibles en una página `/dev/ui` (solo en modo demo).
-- [ ] **T14 (M) Pantalla 1 (Inicio)** y autenticación como invitado y con QR de demostración.
+- [x] **T14 (M) Pantalla 1 (Inicio)** y autenticación como invitado y con QR de demostración.
   *Aceptación:* al elegir invitado se llega a `/cart` con una sesión activa.
 - [ ] **T15 (L) Pantalla 2 (Carrito):** lista con `CartLine`, estados vacío y carga, cantidad y eliminar, total, anillo, franja del lector, resalte de "Recién escaneado".
   *Aceptación:* igual al diseño `screen2.png` con 4 productos y total Q70.25.
@@ -548,6 +548,7 @@ Meta: recorrer el flujo completo con la interfaz y el panel de simulación.
 | Carrito T08 | Bloqueo de ítem, bloqueo de sesión, sin transacción | **Cada escaneo bloquea la sesión con `lockForUpdate`; el precio queda congelado al agregar** | Revisar si el volumen requiere colas o partición de eventos |
 | Checkout T11 | Fallo simulado configurable, pago real | **Checkout atómico; `simulate_failure` y `force_check` solo funcionan con `DEMO_MODE=true`; NIT validado con módulo 11** | Integrar proveedor de pagos y FEL si deja de ser una demo |
 | Frontend T13 | Cliente HTTP propio, estado global, librería de datos | **TanStack Query 5.107.1, Zustand 5.1.0, React Router 7.18.5 y lucide-react 1.70.0; token en `sessionStorage` con un refresh compartido** | Integrar autenticación y datos reales en las pantallas T14-T15 |
+| Inicio T14 | QR de app, invitado, formulario QR | **QR demo fijo `SC-DEMO-0001`; ambos botones autentican con `CART-07`, crean la sesión y navegan a `/cart`** | Conectar el QR real del supermercado si cambia el contrato |
 
 **Qué revisar si el sistema crece:** múltiples sucursales y carritos (tabla de tiendas), sincronización de catálogo con el supermercado, colas para facturación, observabilidad (logs estructurados y métricas), almacenamiento de imágenes, modo sin conexión con cola local de escaneos.
 
