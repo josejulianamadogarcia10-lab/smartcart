@@ -476,7 +476,7 @@ Meta: API de compra completa y probada, sin interfaz.
   *Aceptación:* las ofertas devueltas no incluyen productos que ya están en el carrito.
 - [x] **T11 (L) Checkout y salida:** summary, checkout (CF o NIT), pago simulado, orden, código de salida, revisión aleatoria.
   *Aceptación:* una sesión pagada no admite cambios; el NIT inválido da 422.
-- [ ] **T12 (S) Documentación de la API** en `docs/api.md` (o colección HTTP para VS Code) con ejemplos reales.
+- [x] **T12 (S) Documentación de la API** en `docs/api.md` (o colección HTTP para VS Code) con ejemplos reales.
 
 **Definición de terminado del sprint:** `php artisan test` y `pint --test` en verde, flujo completo probado con la colección HTTP, `composer audit` sin críticos.
 
