@@ -471,7 +471,7 @@ Meta: API de compra completa y probada, sin interfaz.
   *Aceptación:* escanear dos veces el mismo código da cantidad 2; código inválido da 422; código ajeno a la sesión da 403.
 - [x] **T09 (M) Presupuesto y totales** en la respuesta de sesión (`level`, `used_percent`).
   *Aceptación:* con presupuesto Q100 y total Q85.25 el nivel es `warning` y el porcentaje 85.
-- [ ] **T10 (M) Ofertas:** `PromotionService`, `GET offers`, `POST offers/{id}/add`.
+- [x] **T10 (M) Ofertas:** `PromotionService`, `GET offers`, `POST offers/{id}/add`.
   *Aceptación:* las ofertas devueltas no incluyen productos que ya están en el carrito.
 - [ ] **T11 (L) Checkout y salida:** summary, checkout (CF o NIT), pago simulado, orden, código de salida, revisión aleatoria.
   *Aceptación:* una sesión pagada no admite cambios; el NIT inválido da 422.

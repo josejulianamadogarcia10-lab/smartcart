@@ -24,6 +24,15 @@ Content-Type: application/json
 GET {{baseUrl}}/sessions/current
 Authorization: Bearer {{accessToken}}
 
+### Consultar hasta 3 ofertas activas relacionadas
+GET {{baseUrl}}/sessions/current/offers
+Authorization: Bearer {{accessToken}}
+
+### Agregar una oferta (usa el id devuelto arriba)
+@promotionId = pega-aqui-el-id-de-la-oferta
+POST {{baseUrl}}/sessions/current/offers/{{promotionId}}/add
+Authorization: Bearer {{accessToken}}
+
 ### Definir o cambiar presupuesto
 PUT {{baseUrl}}/sessions/current/budget
 Authorization: Bearer {{accessToken}}

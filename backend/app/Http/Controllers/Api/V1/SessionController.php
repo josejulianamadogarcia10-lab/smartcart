@@ -9,6 +9,7 @@ use App\Http\Requests\Api\V1\UpdateCartItemRequest;
 use App\Models\CartItem;
 use App\Models\ShoppingSession;
 use App\Services\CartService;
+use App\Services\PromotionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
@@ -17,7 +18,10 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class SessionController extends Controller
 {
-    public function __construct(private readonly CartService $cartService) {}
+    public function __construct(
+        private readonly CartService $cartService,
+        private readonly PromotionService $promotionService,
+    ) {}
 
     public function store(BudgetRequest $request): JsonResponse
     {
@@ -53,6 +57,23 @@ class SessionController extends Controller
         $this->authorizeSession('view', $session);
 
         return response()->json($this->cartService->representation($session));
+    }
+
+    public function offers(): JsonResponse
+    {
+        $session = $this->currentSession();
+
+        return response()->json(['offers' => $this->promotionService->offers($session)]);
+    }
+
+    public function addOffer(int $promotion): JsonResponse
+    {
+        $session = $this->currentSession();
+        $this->authorizeSession('update', $session);
+        $item = $this->promotionService->add($session, $promotion);
+        $session->refresh()->load(['cartItems.product.category', 'device']);
+
+        return response()->json($this->cartService->representation($session, $item->id));
     }
 
     public function scan(ScanRequest $request): JsonResponse

@@ -270,3 +270,123 @@ it('does not allow one user to modify another user session item', function (): v
 
     expect($item->fresh()->quantity)->toBe(1);
 });
+
+it('returns at most three active offers with the expected price details', function (): void {
+    $extraProducts = collect([
+        ['barcode' => '7401000000039', 'name' => 'Mantequilla', 'price' => '15.50'],
+        ['barcode' => '7401000000046', 'name' => 'Pan de caja', 'price' => '18.50'],
+        ['barcode' => '7401000000053', 'name' => 'Tortillas', 'price' => '6.00'],
+    ])->map(fn (array $data): Product => Product::create([
+        'category_id' => $this->category->id,
+        'barcode' => $data['barcode'],
+        'name' => $data['name'],
+        'price' => $data['price'],
+        'image_emoji' => '🛒',
+        'active' => true,
+    ]));
+    $extraProducts->each(fn (Product $product) => Promotion::create([
+        'product_id' => $product->id,
+        'promo_price' => '5.00',
+        'label' => 'Oferta de prueba',
+        'active' => true,
+    ]));
+    $otherCategory = Category::create(['name' => 'Bebidas', 'color_hex' => '#3b82f6', 'emoji' => '🥤']);
+    $otherProduct = Product::create([
+        'category_id' => $otherCategory->id,
+        'barcode' => '7401000000060',
+        'name' => 'Gaseosa',
+        'price' => '14.00',
+        'image_emoji' => '🥤',
+        'active' => true,
+    ]);
+    Promotion::create(['product_id' => $otherProduct->id, 'promo_price' => '10.00', 'label' => 'Bebidas', 'active' => true]);
+
+    $token = sessionToken($this->user);
+    $this->withToken($token)->postJson('/api/v1/sessions')->assertCreated();
+    CartItem::create(['shopping_session_id' => ShoppingSession::where('user_id', $this->user->id)->value('id'), 'product_id' => $this->product->id, 'quantity' => 1, 'unit_price' => '11.75']);
+    $response = $this->withToken($token)->getJson('/api/v1/sessions/current/offers');
+
+    $response->assertOk()->assertJsonCount(3, 'offers')
+        ->assertJsonStructure(['offers' => [['id', 'name', 'emoji', 'category', 'original_price', 'promo_price', 'saving', 'label']]])
+        ->assertJsonPath('offers.0.category', 'Despensa')
+        ->assertJsonPath('offers.1.category', 'Despensa')
+        ->assertJsonPath('offers.2.category', 'Despensa');
+});
+
+it('excludes products already in the cart and adds an offer at its promo price', function (): void {
+    $token = sessionToken($this->user);
+    $this->withToken($token)->postJson('/api/v1/sessions')->assertCreated();
+    $this->withToken($token)->postJson('/api/v1/sessions/current/scan', [
+        'barcode' => $this->promoProduct->barcode,
+        'source' => 'simulation',
+    ])->assertOk();
+
+    $offers = $this->withToken($token)->getJson('/api/v1/sessions/current/offers')->json('offers');
+    expect(collect($offers)->pluck('id'))->not->toContain(Promotion::where('product_id', $this->promoProduct->id)->value('id'));
+
+    $promotion = Promotion::create([
+        'product_id' => $this->product->id,
+        'promo_price' => '9.99',
+        'label' => 'Precio especial',
+        'active' => true,
+    ]);
+    $this->withToken($token)->postJson("/api/v1/sessions/current/offers/{$promotion->id}/add")
+        ->assertOk()
+        ->assertJsonFragment(['unit_price' => '9.99', 'promo_applied' => true, 'is_new' => true]);
+
+    $this->withToken($token)->postJson("/api/v1/sessions/current/offers/{$promotion->id}/add")
+        ->assertStatus(422)
+        ->assertJsonPath('errors.promotion.0', 'Este producto ya está en tu carrito.');
+});
+
+it('does not expose expired, inactive or nonexistent promotions', function (): void {
+    $expired = Promotion::create([
+        'product_id' => $this->product->id,
+        'promo_price' => '9.00',
+        'label' => 'Vencida',
+        'ends_at' => now()->subMinute(),
+        'active' => true,
+    ]);
+    $inactive = Promotion::create([
+        'product_id' => $this->promoProduct->id,
+        'promo_price' => '19.00',
+        'label' => 'Inactiva',
+        'active' => false,
+    ]);
+    $token = sessionToken($this->user);
+    $this->withToken($token)->postJson('/api/v1/sessions')->assertCreated();
+
+    $this->withToken($token)->getJson('/api/v1/sessions/current/offers')
+        ->assertJsonMissing(['id' => $expired->id])
+        ->assertJsonMissing(['id' => $inactive->id]);
+    $this->withToken($token)->postJson("/api/v1/sessions/current/offers/{$expired->id}/add")
+        ->assertNotFound()
+        ->assertJsonPath('message', 'La oferta no está disponible.');
+    $this->withToken($token)->postJson('/api/v1/sessions/current/offers/999999/add')->assertNotFound();
+});
+
+it('returns not found for another user or a paid session', function (): void {
+    ShoppingSession::create([
+        'user_id' => $this->user->id,
+        'device_id' => $this->device->id,
+        'status' => 'active',
+        'started_at' => now(),
+    ]);
+    $other = User::create(['name' => 'Cliente ajeno', 'role' => 'customer']);
+    $otherToken = sessionToken($other, 'CART-08');
+
+    $this->withToken($otherToken)->getJson('/api/v1/sessions/current/offers')->assertNotFound();
+});
+
+it('does not return offers for a paid session', function (): void {
+    $session = ShoppingSession::create([
+        'user_id' => $this->user->id,
+        'device_id' => $this->device->id,
+        'status' => 'paid',
+        'started_at' => now(),
+    ]);
+    $session->update(['status' => 'paid']);
+
+    $firstToken = sessionToken($this->user);
+    $this->withToken($firstToken)->getJson('/api/v1/sessions/current/offers')->assertNotFound();
+});
