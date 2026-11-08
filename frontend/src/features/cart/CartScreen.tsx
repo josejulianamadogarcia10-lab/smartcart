@@ -188,7 +188,7 @@ export function CartScreen() {
           )}
         </section>
         <aside className="grid content-start gap-5">
-          <Card className="bg-brand-700 text-white">
+          <Card className="!bg-brand-700 !text-white">
             <p className="text-2xl">Total a pagar</p>
             <p className="mt-2 text-6xl font-black">
               {formatMoney(session.totals.total)}
