@@ -11,12 +11,13 @@ import { CartLine } from '../../components/CartLine'
 import { DonutProgress } from '../../components/DonutProgress'
 import { TopBar } from '../../components/TopBar'
 import { DemoPanel } from '../simulation/DemoPanel'
+import { BudgetAlertController } from './BudgetAlert'
+import { BudgetEditor } from './BudgetEditor'
 import { useBarcodeScanner } from '../../hooks/useBarcodeScanner'
 import { formatMoney } from '../../lib/money'
 import { useDemoStore } from '../../state/demoStore'
 
 const sessionKey = ['shopping-session']
-
 interface ScanResponse {
   session: Session
   scan: { result: string; message: string }
@@ -40,6 +41,7 @@ export function CartScreen() {
   const queryClient = useQueryClient()
   const [notice, setNotice] = useState<string | null>(null)
   const [scannerNotice, setScannerNotice] = useState<string | null>(null)
+  const [budgetEditorOpen, setBudgetEditorOpen] = useState(false)
   const demoMode = import.meta.env.VITE_DEMO_MODE === 'true'
   const togglePanel = useDemoStore((state) => state.togglePanel)
   const sessionQuery = useQuery({
@@ -172,6 +174,18 @@ export function CartScreen() {
     },
   })
 
+  const budgetMutation = useMutation({
+    mutationFn: (budget: string | null) =>
+      apiFetch<Session>('/sessions/current/budget', {
+        method: 'PUT',
+        body: JSON.stringify({ budget }),
+      }),
+    onSuccess: (data) => {
+      queryClient.setQueryData(sessionKey, data)
+      setBudgetEditorOpen(false)
+    },
+  })
+
   const scanner = useBarcodeScanner({
     onScan: (barcode) =>
       scanMutation
@@ -210,11 +224,7 @@ export function CartScreen() {
   }
 
   const setDemoBudget = async () => {
-    const data = await apiFetch<Session>('/sessions/current/budget', {
-      method: 'PUT',
-      body: JSON.stringify({ budget: '100.00' }),
-    })
-    queryClient.setQueryData(sessionKey, data)
+    await budgetMutation.mutateAsync('100.00')
   }
 
   return (
@@ -288,24 +298,48 @@ export function CartScreen() {
               </p>
               <p className="mt-2 text-xl">IVA incluido</p>
             </Card>
-            <Card className="flex items-center justify-center gap-7">
-              <DonutProgress
-                percent={session.budget.used_percent}
-                level={session.budget.level}
-              />
-              <div>
-                <p className="text-xl text-muted">Presupuesto</p>
-                <p className="text-3xl font-black text-ink">
-                  {session.budget.amount
-                    ? formatMoney(session.budget.amount)
-                    : 'Sin definir'}
-                </p>
-                {session.budget.remaining && (
-                  <p className="text-lg font-bold text-ok">
-                    Te quedan {formatMoney(session.budget.remaining)}
+            <Card className="flex flex-col items-center justify-center gap-4">
+              <div className="flex items-center justify-center gap-7">
+                <DonutProgress
+                  percent={session.budget.used_percent}
+                  level={session.budget.level}
+                />
+                <div>
+                  <p className="text-xl text-muted">Presupuesto</p>
+                  <p className="text-3xl font-black text-ink">
+                    {session.budget.amount
+                      ? formatMoney(session.budget.amount)
+                      : 'Sin definir'}
                   </p>
-                )}
+                  {session.budget.remaining && (
+                    <p className="text-lg font-bold text-ok">
+                      Te quedan {formatMoney(session.budget.remaining)}
+                    </p>
+                  )}
+                </div>
               </div>
+              <Button
+                className="w-full border-2 border-brand-500 text-brand-700 shadow-none"
+                onClick={() => setBudgetEditorOpen((open) => !open)}
+                variant="secondary"
+              >
+                {budgetEditorOpen
+                  ? 'Cerrar presupuesto'
+                  : session.budget.amount
+                    ? 'Cambiar presupuesto'
+                    : 'Definir presupuesto'}
+              </Button>
+              {budgetEditorOpen && (
+                <BudgetEditor
+                  currentAmount={session.budget.amount}
+                  onClear={() =>
+                    budgetMutation.mutateAsync(null).then(() => undefined)
+                  }
+                  onSave={(amount) =>
+                    budgetMutation.mutateAsync(amount).then(() => undefined)
+                  }
+                />
+              )}
             </Card>
             <Button
               variant="secondary"
@@ -334,6 +368,12 @@ export function CartScreen() {
               .mutateAsync({ barcode, source: 'simulation' })
               .then(() => undefined)
           }
+        />
+      )}
+      {sessionQuery.data && (
+        <BudgetAlertController
+          key={`${sessionQuery.data.id}-${sessionQuery.data.budget.level}`}
+          session={sessionQuery.data}
         />
       )}
     </>
