@@ -28,6 +28,28 @@ describe('App', () => {
       .mockResolvedValueOnce(
         new Response(JSON.stringify({ id: 1 }), { status: 201 }),
       )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            id: 1,
+            status: 'active',
+            items: [],
+            totals: {
+              items_count: 0,
+              subtotal: '0.00',
+              vat: '0.00',
+              total: '0.00',
+            },
+            budget: {
+              amount: null,
+              used_percent: 0,
+              remaining: null,
+              level: 'none',
+            },
+          }),
+          { status: 200 },
+        ),
+      )
 
     render(<App />)
     fireEvent.click(
@@ -36,7 +58,7 @@ describe('App', () => {
 
     await waitFor(() =>
       expect(
-        screen.getByRole('heading', { name: 'Tu carrito' }),
+        screen.getByText('Lector listo. Escanea el siguiente producto'),
       ).toBeInTheDocument(),
     )
     expect(tokenStorage.get()).toBe('guest-token')
@@ -57,6 +79,28 @@ describe('App', () => {
       .mockResolvedValueOnce(
         new Response(JSON.stringify({ id: 2 }), { status: 201 }),
       )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            id: 2,
+            status: 'active',
+            items: [],
+            totals: {
+              items_count: 0,
+              subtotal: '0.00',
+              vat: '0.00',
+              total: '0.00',
+            },
+            budget: {
+              amount: null,
+              used_percent: 0,
+              remaining: null,
+              level: 'none',
+            },
+          }),
+          { status: 200 },
+        ),
+      )
 
     render(<App />)
     fireEvent.click(
@@ -65,7 +109,7 @@ describe('App', () => {
 
     await waitFor(() =>
       expect(
-        screen.getByRole('heading', { name: 'Tu carrito' }),
+        screen.getByText('Lector listo. Escanea el siguiente producto'),
       ).toBeInTheDocument(),
     )
     expect(tokenStorage.get()).toBe('qr-token')

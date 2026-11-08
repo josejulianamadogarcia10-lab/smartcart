@@ -4,6 +4,16 @@ const apiUrl =
   import.meta.env.VITE_API_URL ?? 'https://smartcart-api.test/api/v1'
 const tokenKey = 'smartcart.access_token'
 
+export class ApiRequestError extends Error {
+  readonly status: number
+
+  constructor(status: number, message: string) {
+    super(message)
+    this.status = status
+    this.name = 'ApiRequestError'
+  }
+}
+
 export const tokenStorage = {
   get: () => sessionStorage.getItem(tokenKey),
   set: (token: string) => sessionStorage.setItem(tokenKey, token),
@@ -59,7 +69,10 @@ export async function apiFetch<T>(
   }
   if (!response.ok) {
     const error = (await response.json().catch(() => ({}))) as ApiError
-    throw new Error(error.message ?? 'No fue posible completar la solicitud.')
+    throw new ApiRequestError(
+      response.status,
+      error.message ?? 'No fue posible completar la solicitud.',
+    )
   }
   return (await response.json()) as T
 }

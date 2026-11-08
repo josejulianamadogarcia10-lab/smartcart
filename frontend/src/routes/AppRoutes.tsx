@@ -10,6 +10,7 @@ import { DonutProgress } from '../components/DonutProgress'
 import { TopBar } from '../components/TopBar'
 import type { Item } from '../api/types'
 import { apiFetch, tokenStorage } from '../api/client'
+import { CartScreen } from '../features/cart/CartScreen'
 
 const demoItem: Item = {
   id: 1,
@@ -158,27 +159,18 @@ function Home() {
   )
 }
 function Cart() {
-  return (
-    <Page title="Tu carrito">
-      <div className="grid gap-6 lg:grid-cols-[1fr_18rem]">
-        <div className="grid gap-4">
-          <CartLine item={demoItem} />
-          <Button>Ir a pagar</Button>
-        </div>
-        <Card className="flex flex-col items-center gap-4">
-          <h2 className="text-2xl font-black">Presupuesto</h2>
-          <DonutProgress percent={70} />
-          <p className="text-xl text-muted">Q70.25 de Q100.00</p>
-        </Card>
-      </div>
-    </Page>
-  )
+  return <CartScreen />
 }
 function DemoUi() {
   return (
     <Page title="Componentes de SmartCart">
       <div className="grid gap-5">
-        <CartLine item={demoItem} />
+        <CartLine
+          item={demoItem}
+          onIncrease={() => undefined}
+          onDecrease={() => undefined}
+          onRemove={() => undefined}
+        />
         <DonutProgress percent={70} />
       </div>
     </Page>
