@@ -4,11 +4,14 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\BudgetRequest;
+use App\Http\Requests\Api\V1\CheckoutRequest;
 use App\Http\Requests\Api\V1\ScanRequest;
 use App\Http\Requests\Api\V1\UpdateCartItemRequest;
 use App\Models\CartItem;
+use App\Models\Order;
 use App\Models\ShoppingSession;
 use App\Services\CartService;
+use App\Services\CheckoutService;
 use App\Services\PromotionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
@@ -21,6 +24,7 @@ class SessionController extends Controller
     public function __construct(
         private readonly CartService $cartService,
         private readonly PromotionService $promotionService,
+        private readonly CheckoutService $checkoutService,
     ) {}
 
     public function store(BudgetRequest $request): JsonResponse
@@ -74,6 +78,49 @@ class SessionController extends Controller
         $session->refresh()->load(['cartItems.product.category', 'device']);
 
         return response()->json($this->cartService->representation($session, $item->id));
+    }
+
+    public function summary(): JsonResponse
+    {
+        $session = $this->currentSession();
+        $representation = $this->cartService->representation($session);
+
+        return response()->json([
+            'items' => $representation['items'],
+            'totals' => $representation['totals'],
+        ]);
+    }
+
+    public function checkout(CheckoutRequest $request): JsonResponse
+    {
+        $session = $this->cartService->current(auth('api')->id());
+
+        if (! $session) {
+            $session = ShoppingSession::where('user_id', auth('api')->id())->latest('id')->first();
+            abort_if(! $session, 404, 'No tienes una sesiÃ³n de compra activa.');
+            $this->authorizeSession('view', $session);
+        } else {
+            $this->authorizeSession('update', $session);
+        }
+
+        $order = $this->checkoutService->checkout($session, $request->validated());
+        $payload = ['order' => $order];
+
+        if ($order->status === 'failed') {
+            return response()->json(['message' => 'El pago con tarjeta fue rechazado en la simulación.', ...$payload], 422);
+        }
+
+        return response()->json($payload, 201);
+    }
+
+    public function exit(Order $order): JsonResponse
+    {
+        abort_unless($order->shoppingSession->user_id === auth('api')->id(), 403, 'No tienes permiso para consultar esta orden.');
+
+        return response()->json([
+            'exit_code' => $order->exit_code,
+            'requires_check' => $order->requires_check,
+        ]);
     }
 
     public function scan(ScanRequest $request): JsonResponse

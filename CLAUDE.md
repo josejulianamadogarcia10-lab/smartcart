@@ -326,6 +326,7 @@ Respuesta de `/scan` incluye la sesión actualizada y `scan: { result, message }
 7. **Pago simulado:** `card` aprueba siempre, excepto si `DEMO_FAIL_NEXT_PAYMENT=true` (para demostrar un error). `fast_checkout` genera el código y marca la orden como pendiente de caja.
 8. **Revisión aleatoria:** `requires_check = random() < EXIT_CHECK_PROBABILITY`. En modo demo se puede forzar con el panel de simulación.
 9. **NIT:** validar formato guatemalteco con el algoritmo de dígito verificador del NIT (módulo 11) y aceptar `CF`. No se consulta a la SAT.
+   Para la demo se quitan guion y espacios, se toma el último dígito como verificador, se multiplican los dígitos restantes por pesos descendentes desde `n+1` hasta `2`, se calcula `11 - (suma % 11)` y se reduce 11 a 0. Ejemplos calculados: base `123456` produce `123456-0`; `123456-9` es inválido.
 10. **Una orden por sesión.** Después de pagar, la sesión pasa a `paid` y no admite cambios.
 11. **Autorización:** un usuario solo accede a su propia sesión. Policies y pruebas que lo demuestren.
 
@@ -473,7 +474,7 @@ Meta: API de compra completa y probada, sin interfaz.
   *Aceptación:* con presupuesto Q100 y total Q85.25 el nivel es `warning` y el porcentaje 85.
 - [x] **T10 (M) Ofertas:** `PromotionService`, `GET offers`, `POST offers/{id}/add`.
   *Aceptación:* las ofertas devueltas no incluyen productos que ya están en el carrito.
-- [ ] **T11 (L) Checkout y salida:** summary, checkout (CF o NIT), pago simulado, orden, código de salida, revisión aleatoria.
+- [x] **T11 (L) Checkout y salida:** summary, checkout (CF o NIT), pago simulado, orden, código de salida, revisión aleatoria.
   *Aceptación:* una sesión pagada no admite cambios; el NIT inválido da 422.
 - [ ] **T12 (S) Documentación de la API** en `docs/api.md` (o colección HTTP para VS Code) con ejemplos reales.
 
@@ -545,6 +546,7 @@ Meta: recorrer el flujo completo con la interfaz y el panel de simulación.
 | Cálculo T06 | `float`, BCMath, centavos enteros | **Centavos enteros y redondeo half up para evitar errores de precisión monetaria** | Revisar si se requieren monedas o tasas con más de dos decimales |
 | Autenticación T07 | Sanctum, Passport, JWT | **JWT con `php-open-source-saver/jwt-auth` v2.10.0, guard `api`, blacklist activa y claims de rol/dispositivo** | Revisar rotación de secreto y almacenamiento de tokens si cambia el despliegue |
 | Carrito T08 | Bloqueo de ítem, bloqueo de sesión, sin transacción | **Cada escaneo bloquea la sesión con `lockForUpdate`; el precio queda congelado al agregar** | Revisar si el volumen requiere colas o partición de eventos |
+| Checkout T11 | Fallo simulado configurable, pago real | **Checkout atómico; `simulate_failure` y `force_check` solo funcionan con `DEMO_MODE=true`; NIT validado con módulo 11** | Integrar proveedor de pagos y FEL si deja de ser una demo |
 
 **Qué revisar si el sistema crece:** múltiples sucursales y carritos (tabla de tiendas), sincronización de catálogo con el supermercado, colas para facturación, observabilidad (logs estructurados y métricas), almacenamiento de imágenes, modo sin conexión con cola local de escaneos.
 

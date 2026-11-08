@@ -22,6 +22,9 @@ Route::prefix('v1')->group(function (): void {
         Route::put('sessions/current/budget', [SessionController::class, 'budget']);
         Route::get('sessions/current/offers', [SessionController::class, 'offers']);
         Route::post('sessions/current/offers/{promotion}/add', [SessionController::class, 'addOffer']);
+        Route::get('sessions/current/summary', [SessionController::class, 'summary']);
+        Route::post('sessions/current/checkout', [SessionController::class, 'checkout']);
+        Route::get('orders/{order}/exit', [SessionController::class, 'exit']);
         Route::post('sessions/current/scan', [SessionController::class, 'scan']);
         Route::patch('sessions/current/items/{item}', [SessionController::class, 'update']);
         Route::delete('sessions/current/items/{item}', [SessionController::class, 'destroy']);

@@ -67,6 +67,9 @@ return [
 
     'timezone' => 'America/Guatemala',
 
+    'demo_mode' => env('DEMO_MODE', false),
+    'exit_check_probability' => env('EXIT_CHECK_PROBABILITY', '0.2'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration

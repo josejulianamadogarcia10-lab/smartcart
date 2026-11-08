@@ -33,6 +33,58 @@ Authorization: Bearer {{accessToken}}
 POST {{baseUrl}}/sessions/current/offers/{{promotionId}}/add
 Authorization: Bearer {{accessToken}}
 
+### Consultar resumen de compra
+GET {{baseUrl}}/sessions/current/summary
+Authorization: Bearer {{accessToken}}
+
+### Pagar a Consumidor final con tarjeta
+POST {{baseUrl}}/sessions/current/checkout
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "invoice_type": "CF",
+  "payment_method": "card"
+}
+
+### Pagar con NIT y forzar revisión (solo DEMO_MODE=true)
+POST {{baseUrl}}/sessions/current/checkout
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "invoice_type": "NIT",
+  "nit": "123456-0",
+  "payment_method": "card",
+  "force_check": true
+}
+
+### Simular fallo de tarjeta (solo DEMO_MODE=true)
+POST {{baseUrl}}/sessions/current/checkout
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "invoice_type": "CF",
+  "payment_method": "card",
+  "simulate_failure": true
+}
+
+### Caja rápida
+POST {{baseUrl}}/sessions/current/checkout
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "invoice_type": "CF",
+  "payment_method": "fast_checkout"
+}
+
+### Consultar salida (usa el exit_code de la orden)
+@orderId = pega-aqui-el-id-de-la-orden
+GET {{baseUrl}}/orders/{{orderId}}/exit
+Authorization: Bearer {{accessToken}}
+
 ### Definir o cambiar presupuesto
 PUT {{baseUrl}}/sessions/current/budget
 Authorization: Bearer {{accessToken}}
