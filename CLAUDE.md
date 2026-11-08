@@ -490,7 +490,7 @@ Meta: recorrer el flujo completo con la interfaz y el panel de simulación.
   *Aceptación:* al elegir invitado se llega a `/cart` con una sesión activa.
 - [x] **T15 (L) Pantalla 2 (Carrito):** lista con `CartLine`, estados vacío y carga, cantidad y eliminar, total, anillo, franja del lector, resalte de "Recién escaneado".
   *Aceptación:* igual al diseño `screen2.png` con 4 productos y total Q70.25.
-- [ ] **T16 (M) `useBarcodeScanner`** con pruebas de temporización y validación EAN.
+- [x] **T16 (M) `useBarcodeScanner`** con pruebas de temporización y validación EAN.
   *Aceptación:* simulando teclas rápidas más Enter se agrega el producto; teclas lentas se ignoran.
 - [ ] **T17 (M) Panel de simulación** completo (sección 8.4).
   *Aceptación:* "Escenario completo" deja 4 productos en la lista en menos de 8 segundos.
@@ -550,6 +550,7 @@ Meta: recorrer el flujo completo con la interfaz y el panel de simulación.
 | Frontend T13 | Cliente HTTP propio, estado global, librería de datos | **TanStack Query 5.107.1, Zustand 5.1.0, React Router 7.18.5 y lucide-react 1.70.0; token en `sessionStorage` con un refresh compartido** | Integrar autenticación y datos reales en las pantallas T14-T15 |
 | Inicio T14 | QR de app, invitado, formulario QR | **QR demo fijo `SC-DEMO-0001`; ambos botones autentican con `CART-07`, crean la sesión y navegan a `/cart`** | Conectar el QR real del supermercado si cambia el contrato |
 | Carrito T15 | Datos de relleno y mutaciones sin recuperación | **`/cart` usa `GET /sessions/current`, muestra totales del servidor, mutaciones optimistas con rollback y componentes alineados a `screen2.png`** | Conectar el escáner y el panel de simulación en T16-T17 |
+| Lector T16 | Eventos HID mezclados con escritura manual | **Configuración única para prefijo, terminadores `Enter`/`Tab`, intervalos y deduplicación; EAN-13 espejo del backend; formulario manual solo en modo demo** | Integrar el panel de simulación completo en T17 |
 
 **Qué revisar si el sistema crece:** múltiples sucursales y carritos (tabla de tiendas), sincronización de catálogo con el supermercado, colas para facturación, observabilidad (logs estructurados y métricas), almacenamiento de imágenes, modo sin conexión con cola local de escaneos.
 

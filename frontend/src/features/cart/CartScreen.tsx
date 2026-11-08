@@ -10,9 +10,15 @@ import { Card } from '../../components/Card'
 import { CartLine } from '../../components/CartLine'
 import { DonutProgress } from '../../components/DonutProgress'
 import { TopBar } from '../../components/TopBar'
+import { useBarcodeScanner } from '../../hooks/useBarcodeScanner'
 import { formatMoney } from '../../lib/money'
 
 const sessionKey = ['shopping-session']
+
+interface ScanResponse {
+  session: Session
+  scan: { result: string; message: string }
+}
 
 function CartSkeleton() {
   return (
@@ -31,6 +37,7 @@ export function CartScreen() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [notice, setNotice] = useState<string | null>(null)
+  const [scannerNotice, setScannerNotice] = useState<string | null>(null)
   const sessionQuery = useQuery({
     queryKey: sessionKey,
     queryFn: () => apiFetch<Session>('/sessions/current'),
@@ -107,6 +114,41 @@ export function CartScreen() {
     onSuccess: (data) => queryClient.setQueryData(sessionKey, data),
   })
 
+  const scanMutation = useMutation({
+    mutationFn: (barcode: string) =>
+      apiFetch<ScanResponse>('/sessions/current/scan', {
+        method: 'POST',
+        body: JSON.stringify({ barcode, source: 'reader' }),
+      }),
+    onSuccess: (data) => {
+      queryClient.setQueryData(sessionKey, data.session)
+      setScannerNotice(null)
+    },
+    onError: (error) => {
+      if (error instanceof ApiRequestError) {
+        if (error.status === 404) {
+          setScannerNotice('Este producto no está en el catálogo')
+          return
+        }
+        if (error.status === 422) {
+          setScannerNotice(
+            error.message.includes('99')
+              ? 'La cantidad máxima por línea es 99 unidades.'
+              : 'Código no reconocido',
+          )
+          return
+        }
+      }
+      setScannerNotice('Se perdió la conexión con el servidor')
+    },
+  })
+
+  const scanner = useBarcodeScanner({
+    onScan: (barcode) =>
+      scanMutation.mutateAsync(barcode).then(() => undefined),
+    onInvalid: () => setScannerNotice('Código no reconocido'),
+  })
+
   if (sessionQuery.isLoading)
     return (
       <CartLayout>
@@ -137,12 +179,21 @@ export function CartScreen() {
           <div className="flex min-h-[68px] items-center justify-between rounded-card bg-brand-100 px-7 text-xl font-bold text-brand-700">
             <span className="flex items-center gap-4">
               <ScanBarcode size={30} />
-              Lector listo. Escanea el siguiente producto
+              {scannerNotice ??
+                (scanner.status === 'reading'
+                  ? 'Leyendo…'
+                  : 'Lector listo. Escanea el siguiente producto')}
             </span>
             <span className="rounded-full bg-white px-5 py-2">
               {session.totals.items_count} productos
             </span>
           </div>
+          {import.meta.env.VITE_DEMO_MODE === 'true' && (
+            <DemoScannerForm
+              disabled={scanMutation.isPending}
+              onSubmit={(barcode) => scanMutation.mutate(barcode)}
+            />
+          )}
           {empty ? (
             <Card className="py-16 text-center">
               <p className="text-2xl font-bold text-ink">
@@ -232,6 +283,43 @@ export function CartScreen() {
         </aside>
       </div>
     </CartLayout>
+  )
+}
+
+function DemoScannerForm({
+  disabled,
+  onSubmit,
+}: {
+  disabled: boolean
+  onSubmit: (barcode: string) => void
+}) {
+  const [barcode, setBarcode] = useState('')
+
+  return (
+    <form
+      className="flex flex-wrap items-center gap-3 rounded-card bg-white p-4 shadow-sm"
+      onSubmit={(event) => {
+        event.preventDefault()
+        if (!barcode) return
+        onSubmit(barcode)
+        setBarcode('')
+      }}
+    >
+      <label className="text-lg font-bold text-ink" htmlFor="demo-barcode">
+        Prueba sin lector
+      </label>
+      <input
+        className="min-h-14 min-w-0 flex-1 rounded-btn border-2 border-brand-100 px-4 text-lg text-ink outline-none focus:border-brand-500"
+        id="demo-barcode"
+        inputMode="numeric"
+        onChange={(event) => setBarcode(event.target.value)}
+        placeholder="EAN-13"
+        value={barcode}
+      />
+      <Button disabled={disabled || !barcode} type="submit">
+        Enviar código
+      </Button>
+    </form>
   )
 }
 
