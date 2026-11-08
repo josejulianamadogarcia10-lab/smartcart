@@ -484,7 +484,7 @@ Meta: API de compra completa y probada, sin interfaz.
 
 Meta: recorrer el flujo completo con la interfaz y el panel de simulación.
 
-- [ ] **T13 (M) Base del frontend:** tokens, `TopBar`, `Button`, `Chip`, `Card`, cliente HTTP con interceptor de refresh, rutas.
+- [x] **T13 (M) Base del frontend:** tokens, `TopBar`, `Button`, `Chip`, `Card`, cliente HTTP con interceptor de refresh, rutas.
   *Aceptación:* componentes visibles en una página `/dev/ui` (solo en modo demo).
 - [ ] **T14 (M) Pantalla 1 (Inicio)** y autenticación como invitado y con QR de demostración.
   *Aceptación:* al elegir invitado se llega a `/cart` con una sesión activa.
@@ -547,6 +547,7 @@ Meta: recorrer el flujo completo con la interfaz y el panel de simulación.
 | Autenticación T07 | Sanctum, Passport, JWT | **JWT con `php-open-source-saver/jwt-auth` v2.10.0, guard `api`, blacklist activa y claims de rol/dispositivo** | Revisar rotación de secreto y almacenamiento de tokens si cambia el despliegue |
 | Carrito T08 | Bloqueo de ítem, bloqueo de sesión, sin transacción | **Cada escaneo bloquea la sesión con `lockForUpdate`; el precio queda congelado al agregar** | Revisar si el volumen requiere colas o partición de eventos |
 | Checkout T11 | Fallo simulado configurable, pago real | **Checkout atómico; `simulate_failure` y `force_check` solo funcionan con `DEMO_MODE=true`; NIT validado con módulo 11** | Integrar proveedor de pagos y FEL si deja de ser una demo |
+| Frontend T13 | Cliente HTTP propio, estado global, librería de datos | **TanStack Query 5.107.1, Zustand 5.1.0, React Router 7.18.5 y lucide-react 1.70.0; token en `sessionStorage` con un refresh compartido** | Integrar autenticación y datos reales en las pantallas T14-T15 |
 
 **Qué revisar si el sistema crece:** múltiples sucursales y carritos (tabla de tiendas), sincronización de catálogo con el supermercado, colas para facturación, observabilidad (logs estructurados y métricas), almacenamiento de imágenes, modo sin conexión con cola local de escaneos.
 

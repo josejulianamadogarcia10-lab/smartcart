@@ -23,8 +23,8 @@
 
 :root {
   font-family: Calibri, Carlito, 'Segoe UI', system-ui, sans-serif;
-  color: #0f172a;
-  background: #f1f5f9;
+  color: var(--color-ink);
+  background: var(--color-surface);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;

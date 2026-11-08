@@ -6,9 +6,8 @@ describe('App', () => {
   it('muestra la pantalla inicial de SmartCart', () => {
     render(<App />)
 
-    expect(
-      screen.getByRole('heading', { name: 'SmartCart' }),
-    ).toBeInTheDocument()
-    expect(screen.getByText('React 19')).toBeInTheDocument()
+    expect(screen.getByText('SmartCart')).toBeInTheDocument()
+    expect(screen.getByText('Carrito 07')).toBeInTheDocument()
+    expect(screen.getByText('Lector conectado')).toBeInTheDocument()
   })
 })
