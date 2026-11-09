@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ScanBarcode, Tag, TicketCheck } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -16,6 +16,7 @@ import { BudgetEditor } from './BudgetEditor'
 import { useBarcodeScanner } from '../../hooks/useBarcodeScanner'
 import { formatMoney } from '../../lib/money'
 import { useDemoStore } from '../../state/demoStore'
+import { useInactivityGuard } from '../../hooks/useInactivityGuard'
 
 const sessionKey = ['shopping-session']
 interface ScanResponse {
@@ -48,6 +49,11 @@ export function CartScreen() {
     queryKey: sessionKey,
     queryFn: () => apiFetch<Session>('/sessions/current'),
     enabled: Boolean(tokenStorage.get()),
+  })
+  const returnToHome = useCallback(() => navigate('/'), [navigate])
+  const inactivity = useInactivityGuard({
+    isEmpty: sessionQuery.data?.items.length === 0,
+    onReturn: returnToHome,
   })
 
   useEffect(() => {
@@ -154,6 +160,7 @@ export function CartScreen() {
     onSuccess: (data) => {
       queryClient.setQueryData(sessionKey, data.session)
       setScannerNotice(null)
+      setNotice(`Producto agregado: ${data.scan.message}`)
     },
     onError: (error) => {
       if (error instanceof ApiRequestError) {
@@ -197,6 +204,18 @@ export function CartScreen() {
   if (sessionQuery.isLoading)
     return (
       <CartLayout>
+        <div aria-live="polite" className="sr-only">
+          {notice}
+        </div>
+        {inactivity.warningVisible && (
+          <p
+            className="mb-4 rounded-card border-2 border-amber-500 bg-amber-500/10 p-4 text-lg font-bold text-amber-600"
+            role="status"
+          >
+            No hay actividad reciente. Un toque, tecla o escaneo mantiene la
+            compra abierta.
+          </p>
+        )}
         <CartSkeleton />
       </CartLayout>
     )

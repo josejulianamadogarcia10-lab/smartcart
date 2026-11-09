@@ -54,3 +54,21 @@ npm run test:e2e
 
 No guardes esos valores en archivos versionados. Cada prueba crea su propio invitado y sesión; el backend E2E usa `DEMO_MODE=true` y el frontend `VITE_DEMO_MODE=true`.
 - `docs/`: diseño y documentación del producto.
+## T24: modo quiosco y accesibilidad
+
+En el cliente, el botón de pantalla completa requiere un gesto del usuario. También se puede iniciar Chrome en modo quiosco con:
+
+```powershell
+"C:\Program Files\Google\Chrome\Application\chrome.exe" --kiosk http://localhost:5173
+```
+
+La pantalla `/cart` avisa después de 3 minutos sin actividad. Si el carrito está vacío, vuelve al inicio a los 5 minutos; con productos nunca expulsa al cliente. Un toque, tecla o escaneo reinicia el contador. Los tiempos se configuran en `frontend/src/config/kiosk.ts`.
+
+La auditoría de accesibilidad y las pruebas E2E aisladas se ejecutan con:
+
+```powershell
+cd frontend
+$env:E2E_ADMIN_PASSWORD = "<contraseña local>"
+$env:E2E_DB_DATABASE = "smartcart_test"
+npm run test:e2e
+```

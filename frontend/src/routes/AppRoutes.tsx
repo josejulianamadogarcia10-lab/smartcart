@@ -1,6 +1,12 @@
 import type { ReactNode } from 'react'
-import { useState } from 'react'
-import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import {
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+} from 'react-router-dom'
 import { QrCode, UserRound } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
 import { Button } from '../components/Button'
@@ -132,6 +138,7 @@ function Home() {
           </h2>
           <div className="mt-5 rounded-card border-4 border-surface bg-white p-3">
             <QRCodeSVG
+              aria-label="Código QR de demostración SC-DEMO-0001"
               value="SC-DEMO-0001"
               size={220}
               fgColor="var(--color-ink)"
@@ -184,46 +191,73 @@ function ProtectedRoute({ children }: { children: ReactNode }) {
   return tokenStorage.get() ? children : <Navigate to="/" replace />
 }
 
+function ClientKioskGuard() {
+  const location = useLocation()
+
+  useEffect(() => {
+    const isClientScreen = !location.pathname.startsWith('/admin')
+    if (!isClientScreen) return
+    const preventContextMenu = (event: MouseEvent) => event.preventDefault()
+    const preventGestureZoom = (event: TouchEvent) => {
+      if (event.touches.length > 1) event.preventDefault()
+    }
+    document.addEventListener('contextmenu', preventContextMenu)
+    document.addEventListener('touchmove', preventGestureZoom, {
+      passive: false,
+    })
+    document.documentElement.classList.add('kiosk-client')
+    return () => {
+      document.removeEventListener('contextmenu', preventContextMenu)
+      document.removeEventListener('touchmove', preventGestureZoom)
+      document.documentElement.classList.remove('kiosk-client')
+    }
+  }, [location.pathname])
+  return null
+}
+
 export function AppRoutes() {
   const demoMode = import.meta.env.VITE_DEMO_MODE === 'true'
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/admin" element={<AdminScreen />} />
-      <Route
-        path="/cart"
-        element={
-          <ProtectedRoute>
-            <Cart />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/offers"
-        element={
-          <ProtectedRoute>
-            <OffersScreen />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/checkout"
-        element={
-          <ProtectedRoute>
-            <CheckoutScreen />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/exit"
-        element={
-          <ProtectedRoute>
-            <ExitScreen />
-          </ProtectedRoute>
-        }
-      />
-      {demoMode && <Route path="/dev/ui" element={<DemoUi />} />}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <>
+      <ClientKioskGuard />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/admin" element={<AdminScreen />} />
+        <Route
+          path="/cart"
+          element={
+            <ProtectedRoute>
+              <Cart />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/offers"
+          element={
+            <ProtectedRoute>
+              <OffersScreen />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/checkout"
+          element={
+            <ProtectedRoute>
+              <CheckoutScreen />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/exit"
+          element={
+            <ProtectedRoute>
+              <ExitScreen />
+            </ProtectedRoute>
+          }
+        />
+        {demoMode && <Route path="/dev/ui" element={<DemoUi />} />}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </>
   )
 }

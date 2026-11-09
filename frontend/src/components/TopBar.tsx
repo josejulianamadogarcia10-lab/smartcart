@@ -1,5 +1,6 @@
-import { Bluetooth, ShoppingCart } from 'lucide-react'
+import { Bluetooth, Maximize, ShoppingCart } from 'lucide-react'
 import { Chip } from './Chip'
+import { Button } from './Button'
 
 export function TopBar({
   user = 'Invitado',
@@ -8,6 +9,11 @@ export function TopBar({
   user?: string
   title?: string
 }) {
+  const enterFullscreen = async () => {
+    if (!document.fullscreenElement)
+      await document.documentElement.requestFullscreen()
+  }
+
   return (
     <header className="flex flex-wrap items-center justify-between gap-4 border-b border-brand-100 bg-white px-6 py-4 shadow-sm">
       <div className="flex items-center gap-3">
@@ -21,6 +27,14 @@ export function TopBar({
           <Bluetooth size={22} aria-hidden="true" /> Lector conectado
         </span>
         <span className="text-ink">{user}</span>
+        <Button
+          aria-label="Activar pantalla completa"
+          className="min-h-12 px-4 text-base shadow-none"
+          onClick={() => void enterFullscreen()}
+          type="button"
+        >
+          <Maximize size={22} aria-hidden="true" />
+        </Button>
       </div>
     </header>
   )
