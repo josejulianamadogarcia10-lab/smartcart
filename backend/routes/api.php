@@ -32,6 +32,7 @@ Route::prefix('v1')->group(function (): void {
     });
 
     Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function (): void {
+        Route::get('categories', [AdminController::class, 'categories']);
         Route::get('products', [AdminController::class, 'products']);
         Route::post('products', [AdminController::class, 'storeProduct']);
         Route::put('products/{product}', [AdminController::class, 'updateProduct']);

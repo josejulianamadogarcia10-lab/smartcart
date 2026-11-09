@@ -14,6 +14,13 @@ function mockAdminApi() {
         { status: 200 },
       )
     }
+    if (url.endsWith('/admin/categories'))
+      return new Response(
+        JSON.stringify({
+          categories: [{ id: 1, name: 'Lácteos', emoji: '🥛' }],
+        }),
+        { status: 200 },
+      )
     if (url.endsWith('/admin/products')) {
       return new Response(
         JSON.stringify({
@@ -92,6 +99,11 @@ describe('AdminScreen', () => {
     expect(
       screen.getByRole('heading', { name: 'Nuevo producto' }),
     ).toBeInTheDocument()
+    expect(
+      screen.getByRole('combobox', { name: 'Categoría' }),
+    ).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Generar EAN' }))
+    expect(screen.getByLabelText('EAN-13')).toHaveValue('7401000000022')
     expect(document.body.style.overflow).toBe('hidden')
     const opener = screen.getByRole('button', { name: 'Nuevo producto' })
     opener.focus()

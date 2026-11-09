@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\AdminProductRequest;
 use App\Http\Requests\Api\V1\AdminPromotionRequest;
+use App\Models\Category;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -15,6 +16,11 @@ use Illuminate\Validation\ValidationException;
 
 class AdminController extends Controller
 {
+    public function categories(): JsonResponse
+    {
+        return response()->json(['categories' => Category::query()->orderBy('name')->get(['id', 'name', 'emoji'])]);
+    }
+
     public function products(): JsonResponse
     {
         return response()->json(['products' => Product::with('category')->orderBy('name')->get()]);

@@ -16,6 +16,7 @@ interface AdminUser {
 interface Category {
   id: number
   name: string
+  emoji?: string
 }
 interface Product {
   id: number
@@ -75,7 +76,7 @@ const emptyProduct = {
   image_emoji: '🛒',
   image_url: '',
   active: true,
-  stock: '',
+  stock: '0',
 }
 const emptyPromotion = {
   product_id: '',
@@ -88,6 +89,35 @@ const emptyPromotion = {
 
 function fieldMessage(errors: FieldErrors, field: string): string | null {
   return errors[field]?.[0] ?? null
+}
+
+function eanCheckDigit(base: string): string {
+  const sum = [...base].reduce(
+    (total, digit, index) => total + Number(digit) * (index % 2 === 0 ? 1 : 3),
+    0,
+  )
+  return String((10 - (sum % 10)) % 10)
+}
+
+function nextEan(products: Product[], current: string): string {
+  const twelve = /^\d{12}$/.test(current) ? current : null
+  if (twelve) return `${twelve}${eanCheckDigit(twelve)}`
+  const used = new Set(products.map((product) => product.barcode))
+  let sequence =
+    Math.max(
+      0,
+      ...products
+        .map((product) => product.barcode)
+        .filter((barcode) => /^740\d{10}$/.test(barcode))
+        .map((barcode) => Number(barcode.slice(3, 12))),
+    ) + 1
+  let candidate: string
+  do {
+    const base = `740${String(sequence).padStart(9, '0')}`
+    candidate = `${base}${eanCheckDigit(base)}`
+    sequence += 1
+  } while (used.has(candidate))
+  return candidate
 }
 
 function Field({
@@ -132,6 +162,7 @@ export function AdminScreen() {
   const [loggedIn, setLoggedIn] = useState(false)
   const [tab, setTab] = useState<Tab>('summary')
   const [products, setProducts] = useState<Product[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
   const [promotions, setPromotions] = useState<Promotion[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
   const [orders, setOrders] = useState<Paginator | null>(null)
@@ -166,13 +197,20 @@ export function AdminScreen() {
   }
 
   const loadData = async (page = 1) => {
-    const [productResponse, promotionResponse, statsResponse, orderResponse] =
-      await Promise.all([
-        adminFetch<{ products: Product[] }>('/admin/products'),
-        adminFetch<{ promotions: Promotion[] }>('/admin/promotions'),
-        adminFetch<Stats>('/admin/stats'),
-        adminFetch<Paginator>(`/admin/orders?page=${page}`),
-      ])
+    const [
+      categoryResponse,
+      productResponse,
+      promotionResponse,
+      statsResponse,
+      orderResponse,
+    ] = await Promise.all([
+      adminFetch<{ categories: Category[] }>('/admin/categories'),
+      adminFetch<{ products: Product[] }>('/admin/products'),
+      adminFetch<{ promotions: Promotion[] }>('/admin/promotions'),
+      adminFetch<Stats>('/admin/stats'),
+      adminFetch<Paginator>(`/admin/orders?page=${page}`),
+    ])
+    setCategories(categoryResponse.categories)
     setProducts(productResponse.products)
     setPromotions(promotionResponse.promotions)
     setStats(statsResponse)
@@ -512,9 +550,11 @@ export function AdminScreen() {
                 setEditingProduct(null)
               }}
             >
-              <ProductForm
+              <ProductFormEnhanced
                 values={productForm}
                 errors={formErrors}
+                categories={categories}
+                products={products}
                 onChange={setProductForm}
                 onSubmit={saveProduct}
                 loading={loading}
@@ -917,21 +957,36 @@ function Modal({
     document.body,
   )
 }
-function ProductForm({
+export function ProductForm({
   values,
   errors,
+  categories,
+  products,
   onChange,
   onSubmit,
   loading,
 }: {
   values: typeof emptyProduct
   errors: FieldErrors
+  categories: Category[]
+  products: Product[]
   onChange: (value: typeof emptyProduct) => void
   onSubmit: (event: FormEvent) => void
   loading: boolean
 }) {
-  const update = (key: keyof typeof emptyProduct, value: string | boolean) =>
+  void products
+  const update = (key: keyof typeof emptyProduct, value: string | boolean) => {
+    if (key === 'category_id') {
+      const category = categories.find((item) => String(item.id) === value)
+      onChange({
+        ...values,
+        category_id: value as string,
+        image_emoji: category?.emoji ?? values.image_emoji,
+      })
+      return
+    }
     onChange({ ...values, [key]: value })
+  }
   return (
     <form className="mt-6 grid gap-4" onSubmit={onSubmit}>
       <Field label="Nombre" error={fieldMessage(errors, 'name')}>
@@ -1006,6 +1061,119 @@ function ProductForm({
     </form>
   )
 }
+function ProductFormEnhanced({
+  values,
+  errors,
+  categories,
+  products,
+  onChange,
+  onSubmit,
+  loading,
+}: {
+  values: typeof emptyProduct
+  errors: FieldErrors
+  categories: Category[]
+  products: Product[]
+  onChange: (value: typeof emptyProduct) => void
+  onSubmit: (event: FormEvent) => void
+  loading: boolean
+}) {
+  const update = (key: keyof typeof emptyProduct, value: string | boolean) => {
+    if (key === 'category_id') {
+      const category = categories.find((item) => String(item.id) === value)
+      onChange({
+        ...values,
+        category_id: String(value),
+        image_emoji: category?.emoji ?? values.image_emoji,
+      })
+      return
+    }
+    onChange({ ...values, [key]: value })
+  }
+  return (
+    <form className="mt-6 grid gap-4" onSubmit={onSubmit}>
+      <Field label="Nombre" error={fieldMessage(errors, 'name')}>
+        <input
+          className="min-h-14 rounded-btn border-2 border-brand-100 px-4"
+          value={values.name}
+          onChange={(event) => update('name', event.target.value)}
+          required
+        />
+      </Field>
+      <Field label="EAN-13" error={fieldMessage(errors, 'barcode')}>
+        <div className="flex gap-3">
+          <input
+            className="min-h-14 min-w-0 flex-1 rounded-btn border-2 border-brand-100 px-4"
+            maxLength={13}
+            inputMode="numeric"
+            value={values.barcode}
+            onChange={(event) =>
+              update('barcode', event.target.value.replace(/\D/g, ''))
+            }
+            required
+          />
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => update('barcode', nextEan(products, values.barcode))}
+          >
+            Generar EAN
+          </Button>
+        </div>
+      </Field>
+      <Field label="Categoría" error={fieldMessage(errors, 'category_id')}>
+        <select
+          className="min-h-14 rounded-btn border-2 border-brand-100 px-4"
+          value={values.category_id}
+          onChange={(event) => update('category_id', event.target.value)}
+          required
+        >
+          <option value="">Selecciona una categoría</option>
+          {categories.map((category) => (
+            <option key={category.id} value={category.id}>
+              {category.name}
+            </option>
+          ))}
+        </select>
+      </Field>
+      <Field label="Precio (Q)" error={fieldMessage(errors, 'price')}>
+        <div className="flex min-h-14 items-center rounded-btn border-2 border-brand-100 px-4">
+          <span className="mr-2 text-xl text-muted">Q</span>
+          <input
+            className="min-w-0 flex-1 outline-none"
+            type="number"
+            min="0.01"
+            step="0.01"
+            value={values.price}
+            onChange={(event) => update('price', event.target.value)}
+            required
+          />
+        </div>
+      </Field>
+      <Field label="Emoji" error={fieldMessage(errors, 'image_emoji')}>
+        <input
+          className="min-h-14 rounded-btn border-2 border-brand-100 px-4"
+          value={values.image_emoji}
+          onChange={(event) => update('image_emoji', event.target.value)}
+          required
+        />
+      </Field>
+      <Field label="Stock" error={fieldMessage(errors, 'stock')}>
+        <input
+          className="min-h-14 rounded-btn border-2 border-brand-100 px-4"
+          type="number"
+          min="0"
+          value={values.stock}
+          onChange={(event) => update('stock', event.target.value)}
+        />
+      </Field>
+      <Button type="submit" disabled={loading}>
+        {loading ? 'Guardando…' : 'Guardar producto'}
+      </Button>
+    </form>
+  )
+}
+
 function PromotionForm({
   values,
   errors,

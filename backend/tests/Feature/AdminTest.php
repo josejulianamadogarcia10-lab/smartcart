@@ -34,6 +34,26 @@ it('rechaza el panel admin para un token sin rol admin', function (): void {
         ->assertJsonPath('message', 'No tienes permisos de administrador.');
 });
 
+it('devuelve categorías solo a administradores', function (): void {
+    $customer = User::factory()->create(['role' => 'customer']);
+    $this->withToken(auth('api')->login($customer))->getJson('/api/v1/admin/categories')->assertForbidden();
+
+    Category::factory()->create(['name' => 'Lácteos', 'emoji' => '🥛']);
+    $admin = User::factory()->create(['role' => 'admin']);
+    $this->withToken(auth('api')->login($admin))->getJson('/api/v1/admin/categories')
+        ->assertOk()->assertJsonPath('categories.0.name', 'Lácteos');
+});
+
+it('traduce el error de tamaño del EAN-13', function (): void {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $category = Category::factory()->create();
+
+    $this->withToken(auth('api')->login($admin))->postJson('/api/v1/admin/products', [
+        'category_id' => $category->id, 'barcode' => '740100000001', 'name' => 'Producto',
+        'price' => '10.00', 'image_emoji' => '🛒',
+    ])->assertUnprocessable()->assertJsonPath('errors.barcode.0', 'El EAN-13 debe tener 13 dígitos.');
+});
+
 it('valida EAN único al crear productos y desactiva productos con historial', function (): void {
     $token = adminToken();
     $category = Category::factory()->create();
