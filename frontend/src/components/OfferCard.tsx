@@ -16,6 +16,9 @@ export function OfferCard({
   onAdd: () => void
   disabled?: boolean
 }) {
+  const hasSaving = Number(offer.saving) > 0
+  const isTwoForOne = /2x1/i.test(offer.label)
+
   return (
     <Card className="flex h-full flex-col gap-3 p-[22px]">
       <div
@@ -23,7 +26,11 @@ export function OfferCard({
       >
         <span aria-hidden="true">{offer.emoji}</span>
         <span className="absolute left-3 top-3 rounded-full bg-amber-500/15 px-4 py-2 text-lg font-bold text-amber-600">
-          Ahorras Q{offer.saving}
+          {hasSaving
+            ? `Ahorras Q${offer.saving}`
+            : isTwoForOne
+              ? '2x1'
+              : offer.label}
         </span>
       </div>
       <h2 className="text-3xl font-black text-ink">{offer.name}</h2>
@@ -32,9 +39,11 @@ export function OfferCard({
         <span className="text-5xl font-black text-amber-600">
           Q{offer.promo_price}
         </span>
-        <span className="text-2xl text-muted line-through">
-          Q{offer.original_price}
-        </span>
+        {hasSaving && (
+          <span className="text-2xl text-muted line-through">
+            Q{offer.original_price}
+          </span>
+        )}
       </div>
       <div className="flex flex-wrap gap-2">
         <span className="inline-flex items-center gap-2 rounded-full bg-surface px-4 py-2 text-lg font-bold text-ink">

@@ -12,6 +12,8 @@ import type { Item } from '../api/types'
 import { apiFetch, tokenStorage } from '../api/client'
 import { CartScreen } from '../features/cart/CartScreen'
 import { OffersScreen } from '../features/offers/OffersScreen'
+import { CheckoutScreen } from '../features/checkout/CheckoutScreen'
+import { ExitScreen } from '../features/exit/ExitScreen'
 
 const demoItem: Item = {
   id: 1,
@@ -177,17 +179,6 @@ function DemoUi() {
     </Page>
   )
 }
-function Placeholder({ title }: { title: string }) {
-  return (
-    <Page title={title}>
-      <Card>
-        <p className="text-xl text-muted">
-          Esta pantalla estará disponible en la siguiente tarea.
-        </p>
-      </Card>
-    </Page>
-  )
-}
 function ProtectedRoute({ children }: { children: ReactNode }) {
   return tokenStorage.get() ? children : <Navigate to="/" replace />
 }
@@ -217,7 +208,7 @@ export function AppRoutes() {
         path="/checkout"
         element={
           <ProtectedRoute>
-            <Placeholder title="Resumen y pago" />
+            <CheckoutScreen />
           </ProtectedRoute>
         }
       />
@@ -225,7 +216,7 @@ export function AppRoutes() {
         path="/exit"
         element={
           <ProtectedRoute>
-            <Placeholder title="Salida" />
+            <ExitScreen />
           </ProtectedRoute>
         }
       />

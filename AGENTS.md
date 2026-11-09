@@ -502,7 +502,7 @@ Meta: recorrer el flujo completo con la interfaz y el panel de simulación.
 
 ### Sprint 3: cierre, administración y demo (semanas 5 y 6)
 
-- [ ] **T20 (L) Pantalla 5 (Resumen y pago)** con factura CF o NIT, métodos de pago y error de pago simulado.
+- [x] **T20 (L) Pantalla 5 (Resumen y pago)** con factura CF o NIT, métodos de pago y error de pago simulado.
 - [ ] **T21 (M) Pantalla 6 (Salida)** con QR de salida y aviso de revisión.
 - [ ] **T22 (L) Administración mínima:** login admin, CRUD de productos y ofertas, lista de compras y estadísticas básicas.
 - [ ] **T23 (M) Prueba Playwright** del recorrido completo.
@@ -554,6 +554,7 @@ Meta: recorrer el flujo completo con la interfaz y el panel de simulación.
 | Simulación T17 | Banderas de demo persistentes o endpoint adicional | **Catálogo de 20 productos en `demoCatalog.ts`; Zustand guarda `force_check`/`simulate_failure`; reinicio usa el `POST /sessions` existente y el escenario se cancela al cerrar o salir** | Enviar las banderas durante el checkout de T20 |
 | Presupuesto T18 | Alertas repetidas y montos calculados en frontend | **El alertdialog usa `budget` y `totals` del servidor, persiste niveles reconocidos por sesión en `sessionStorage`, rearma al bajar de nivel y permite definir/quitar presupuesto** | Diseñar la pantalla completa de checkout en T20 |
 | Ofertas T19 | Marcador provisional de pasillo | **`/offers` consulta hasta tres ofertas del servidor, muestra el total visible y quita de la lista una oferta agregada; “Pasillo 4” es un marcador fijo pendiente del catálogo real** | Diseñar la pantalla completa de checkout en T20 |
+| Checkout T20 | Totales y pago controlados por servidor | **`/checkout` muestra el resumen del servidor, valida el NIT en backend, bloquea el doble envío y pasa el `exit_code` recibido a `/exit`; las banderas demo solo viajan con `VITE_DEMO_MODE=true`** | Diseñar la pantalla de salida completa en T21 |
 
 **Qué revisar si el sistema crece:** múltiples sucursales y carritos (tabla de tiendas), sincronización de catálogo con el supermercado, colas para facturación, observabilidad (logs estructurados y métricas), almacenamiento de imágenes, modo sin conexión con cola local de escaneos.
 
