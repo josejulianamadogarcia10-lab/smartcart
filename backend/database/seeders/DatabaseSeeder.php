@@ -15,11 +15,11 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $adminPassword = env('SEED_ADMIN_PASSWORD');
+        $adminPassword = env('E2E_ADMIN_PASSWORD', env('SEED_ADMIN_PASSWORD'));
 
         if (! is_string($adminPassword) || trim($adminPassword) === '') {
             throw new InvalidArgumentException(
-                'No se puede ejecutar el seeder: define SEED_ADMIN_PASSWORD en el archivo .env local.',
+                'No se puede ejecutar el seeder: define E2E_ADMIN_PASSWORD (E2E) o SEED_ADMIN_PASSWORD (local) en el entorno.',
             );
         }
 

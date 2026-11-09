@@ -505,7 +505,7 @@ Meta: recorrer el flujo completo con la interfaz y el panel de simulación.
 - [x] **T20 (L) Pantalla 5 (Resumen y pago)** con factura CF o NIT, métodos de pago y error de pago simulado.
 - [x] **T21 (M) Pantalla 6 (Salida)** con QR de salida y aviso de revisión.
 - [x] **T22 (L) Administración mínima:** login admin, CRUD de productos y ofertas, lista de compras y estadísticas básicas.
-- [ ] **T23 (M) Prueba Playwright** del recorrido completo.
+- [x] **T23 (M) Prueba Playwright** del recorrido completo.
 - [ ] **T24 (M) Pulido:** accesibilidad (foco visible, contraste, tamaños táctiles), modo quiosco (pantalla completa, sin selección de texto), inactividad, responsive 1024x768.
 - [ ] **T25 (S) Guion de demostración** en `docs/demo.md`: pasos exactos, qué botones del panel pulsar, cómo reiniciar, plan B si falla la red.
 - [ ] **T26 (S) Revisión final:** `composer audit`, `npm audit`, limpieza de `console.log`, `APP_DEBUG=false` en la configuración de demo, `README` actualizado.
@@ -561,6 +561,8 @@ Meta: recorrer el flujo completo con la interfaz y el panel de simulación.
 **Qué revisar si el sistema crece:** múltiples sucursales y carritos (tabla de tiendas), sincronización de catálogo con el supermercado, colas para facturación, observabilidad (logs estructurados y métricas), almacenamiento de imágenes, modo sin conexión con cola local de escaneos.
 
 ---
+
+| E2E T23 | Entorno compartido, base demo, entorno aislado | **Playwright levanta backend en 8001 y frontend en 5180 contra `smartcart_test`; exige variables E2E, `DEMO_MODE=true`, artefactos ignorados y pruebas seriales independientes** | Revisar el aislamiento si se automatiza CI |
 
 ## 14. Primer mensaje sugerido para el agente
 

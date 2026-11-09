@@ -48,14 +48,20 @@ export function CheckoutScreen() {
     onSuccess: ({ order }) =>
       navigate('/exit', { state: { orderId: order.id } }),
     onError: (error) => {
-      if (error instanceof ApiRequestError && error.status === 422) {
+      if (
+        error instanceof ApiRequestError &&
+        [402, 422].includes(error.status)
+      ) {
+        if (demoMode && simulateFailure) {
+          useDemoStore.getState().toggleSimulateFailure()
+        }
         setNitError(
-          invoiceType === 'NIT'
+          error.status === 422 && invoiceType === 'NIT'
             ? (error.errors?.nit?.[0] ?? error.message)
             : null,
         )
         setPaymentError(
-          invoiceType === 'NIT'
+          error.status === 422 && invoiceType === 'NIT'
             ? null
             : 'No pudimos procesar el pago. Puedes intentarlo de nuevo.',
         )

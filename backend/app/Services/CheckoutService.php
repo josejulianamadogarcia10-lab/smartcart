@@ -24,7 +24,9 @@ class CheckoutService
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            if ($lockedSession->order()->exists()) {
+            $existingOrder = $lockedSession->order()->first();
+
+            if ($existingOrder && $existingOrder->status !== 'failed') {
                 throw ValidationException::withMessages(['checkout' => 'Esta sesión ya tiene un pago registrado.']);
             }
 
@@ -47,7 +49,7 @@ class CheckoutService
             $status = $paymentFailed ? 'failed' : ($data['payment_method'] === 'fast_checkout' ? 'pending_cashier' : 'paid');
             $exitCode = $this->uniqueExitCode();
 
-            $order = Order::create([
+            $order = $existingOrder ?? Order::create([
                 'shopping_session_id' => $lockedSession->id,
                 'invoice_type' => strtoupper($data['invoice_type']),
                 'nit' => strtoupper($data['invoice_type']) === 'NIT' ? $data['nit'] : null,
@@ -59,6 +61,20 @@ class CheckoutService
                 'requires_check' => $requiresCheck,
                 'exit_code' => $exitCode,
             ]);
+
+            if ($existingOrder) {
+                $order->update([
+                    'invoice_type' => strtoupper($data['invoice_type']),
+                    'nit' => strtoupper($data['invoice_type']) === 'NIT' ? $data['nit'] : null,
+                    'subtotal' => $pricing['subtotal'],
+                    'vat' => $pricing['vat'],
+                    'total' => $pricing['total'],
+                    'payment_method' => $data['payment_method'],
+                    'status' => $status,
+                    'requires_check' => $requiresCheck,
+                ]);
+                $order->items()->delete();
+            }
 
             foreach ($lockedSession->cartItems as $item) {
                 OrderItem::create([
