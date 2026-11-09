@@ -30,15 +30,16 @@ it('muestra la alerta warning con valores del servidor y permite cerrarla', () =
 it('muestra el formato rojo para presupuesto excedido', () => {
   const budget: Budget = {
     amount: '100.00',
-    used_percent: 120,
-    remaining: '-20.00',
+    used_percent: 100,
+    remaining: '0.00',
     level: 'exceeded',
   }
-  render(<BudgetAlert budget={budget} onClose={vi.fn()} total="120.00" />)
+  render(<BudgetAlert budget={budget} onClose={vi.fn()} total="100.00" />)
 
   expect(screen.getByText('Superaste tu presupuesto')).toBeInTheDocument()
   expect(
-    screen.getByText('Llevas Q120.00 de Q100.00. Te pasaste por Q20.00.'),
+    screen.getByText('Llevas Q100.00 de Q100.00. Te pasaste por Q0.00.'),
   ).toBeInTheDocument()
-  expect(screen.getByRole('alertdialog')).toHaveClass('bg-ink/50')
+  expect(screen.getByRole('alertdialog')).toHaveClass('bg-ink/50', 'z-50')
+  expect(screen.getByText('100%')).toHaveClass('text-5xl')
 })

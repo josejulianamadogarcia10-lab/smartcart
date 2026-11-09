@@ -203,6 +203,9 @@ También existen `PATCH /sessions/current/items/{item}` con
 
 ## Ofertas
 
+La pantalla muestra `Pasillo 4` como marcador provisional fijo porque el
+catálogo de demostración todavía no incluye pasillos reales.
+
 `GET /sessions/current/offers` devuelve `{ "offers": Offer[] }`, hasta tres
 promociones activas, priorizando categorías presentes en el carrito.
 `POST /sessions/current/offers/{promotion}/add` agrega la oferta y congela su

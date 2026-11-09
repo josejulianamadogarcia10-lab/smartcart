@@ -496,7 +496,7 @@ Meta: recorrer el flujo completo con la interfaz y el panel de simulación.
   *Aceptación:* "Escenario completo" deja 4 productos en la lista en menos de 8 segundos.
 - [x] **T18 (M) Presupuesto:** definir monto, modal de alerta al 80 % y 100 % (una vez por umbral).
   *Aceptación:* igual al diseño `screen3.png`.
-- [ ] **T19 (M) Pantalla 4 (Ofertas)** y agregar desde la oferta.
+- [x] **T19 (M) Pantalla 4 (Ofertas)** y agregar desde la oferta.
 
 **Definición de terminado:** recorrido inicio a ofertas funcionando con el panel de simulación; pruebas de componentes en verde; sin errores en la consola del navegador.
 
@@ -553,6 +553,7 @@ Meta: recorrer el flujo completo con la interfaz y el panel de simulación.
 | Lector T16 | Eventos HID mezclados con escritura manual | **Configuración única para prefijo, terminadores `Enter`/`Tab`, intervalos y deduplicación; EAN-13 espejo del backend; formulario manual solo en modo demo** | Integrar el panel de simulación completo en T17 |
 | Simulación T17 | Banderas de demo persistentes o endpoint adicional | **Catálogo de 20 productos en `demoCatalog.ts`; Zustand guarda `force_check`/`simulate_failure`; reinicio usa el `POST /sessions` existente y el escenario se cancela al cerrar o salir** | Enviar las banderas durante el checkout de T20 |
 | Presupuesto T18 | Alertas repetidas y montos calculados en frontend | **El alertdialog usa `budget` y `totals` del servidor, persiste niveles reconocidos por sesión en `sessionStorage`, rearma al bajar de nivel y permite definir/quitar presupuesto** | Diseñar la pantalla completa de checkout en T20 |
+| Ofertas T19 | Marcador provisional de pasillo | **`/offers` consulta hasta tres ofertas del servidor, muestra el total visible y quita de la lista una oferta agregada; “Pasillo 4” es un marcador fijo pendiente del catálogo real** | Diseñar la pantalla completa de checkout en T20 |
 
 **Qué revisar si el sistema crece:** múltiples sucursales y carritos (tabla de tiendas), sincronización de catálogo con el supermercado, colas para facturación, observabilidad (logs estructurados y métricas), almacenamiento de imágenes, modo sin conexión con cola local de escaneos.
 

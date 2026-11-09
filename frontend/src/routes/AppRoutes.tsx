@@ -11,6 +11,7 @@ import { TopBar } from '../components/TopBar'
 import type { Item } from '../api/types'
 import { apiFetch, tokenStorage } from '../api/client'
 import { CartScreen } from '../features/cart/CartScreen'
+import { OffersScreen } from '../features/offers/OffersScreen'
 
 const demoItem: Item = {
   id: 1,
@@ -208,7 +209,7 @@ export function AppRoutes() {
         path="/offers"
         element={
           <ProtectedRoute>
-            <Placeholder title="Ofertas" />
+            <OffersScreen />
           </ProtectedRoute>
         }
       />

@@ -31,7 +31,7 @@ export function DonutProgress({
         className={`grid ${size === 'large' ? 'size-40' : 'size-24'} place-items-center rounded-full bg-white text-center leading-none`}
       >
         <span
-          className={`${size === 'large' ? 'text-6xl' : 'text-3xl'} font-black ${colors.text}`}
+          className={`${size === 'large' ? (bounded >= 100 ? 'text-5xl' : 'text-6xl') : 'text-3xl'} font-black ${colors.text}`}
         >
           {bounded}%
         </span>

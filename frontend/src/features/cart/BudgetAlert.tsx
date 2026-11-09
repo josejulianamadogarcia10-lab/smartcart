@@ -71,7 +71,7 @@ export function BudgetAlert({ budget, total, onClose }: BudgetAlertProps) {
     <div
       aria-label="Alerta de presupuesto"
       aria-modal="true"
-      className="fixed inset-x-0 bottom-0 top-[88px] z-30 grid place-items-center bg-ink/50 px-5 py-8 backdrop-blur-[3px]"
+      className="fixed inset-x-0 bottom-0 top-[88px] z-50 grid place-items-center bg-ink/50 px-5 py-8 backdrop-blur-[3px]"
       role="alertdialog"
     >
       <section
