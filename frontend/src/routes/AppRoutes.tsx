@@ -14,6 +14,7 @@ import { CartScreen } from '../features/cart/CartScreen'
 import { OffersScreen } from '../features/offers/OffersScreen'
 import { CheckoutScreen } from '../features/checkout/CheckoutScreen'
 import { ExitScreen } from '../features/exit/ExitScreen'
+import { AdminScreen } from '../features/admin/AdminScreen'
 
 const demoItem: Item = {
   id: 1,
@@ -188,6 +189,7 @@ export function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
+      <Route path="/admin" element={<AdminScreen />} />
       <Route
         path="/cart"
         element={

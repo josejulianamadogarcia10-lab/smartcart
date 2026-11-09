@@ -504,7 +504,7 @@ Meta: recorrer el flujo completo con la interfaz y el panel de simulación.
 
 - [x] **T20 (L) Pantalla 5 (Resumen y pago)** con factura CF o NIT, métodos de pago y error de pago simulado.
 - [x] **T21 (M) Pantalla 6 (Salida)** con QR de salida y aviso de revisión.
-- [ ] **T22 (L) Administración mínima:** login admin, CRUD de productos y ofertas, lista de compras y estadísticas básicas.
+- [x] **T22 (L) Administración mínima:** login admin, CRUD de productos y ofertas, lista de compras y estadísticas básicas.
 - [ ] **T23 (M) Prueba Playwright** del recorrido completo.
 - [ ] **T24 (M) Pulido:** accesibilidad (foco visible, contraste, tamaños táctiles), modo quiosco (pantalla completa, sin selección de texto), inactividad, responsive 1024x768.
 - [ ] **T25 (S) Guion de demostración** en `docs/demo.md`: pasos exactos, qué botones del panel pulsar, cómo reiniciar, plan B si falla la red.
@@ -556,6 +556,7 @@ Meta: recorrer el flujo completo con la interfaz y el panel de simulación.
 | Ofertas T19 | Marcador provisional de pasillo | **`/offers` consulta hasta tres ofertas del servidor, muestra el total visible y quita de la lista una oferta agregada; “Pasillo 4” es un marcador fijo pendiente del catálogo real** | Diseñar la pantalla completa de checkout en T20 |
 | Checkout T20 | Totales y pago controlados por servidor | **`/checkout` muestra el resumen del servidor, valida el NIT en backend, bloquea el doble envío y pasa el `exit_code` recibido a `/exit`; las banderas demo solo viajan con `VITE_DEMO_MODE=true`** | Diseñar la pantalla de salida completa en T21 |
 | Salida T21 | QR, recuperación y nueva compra | **`/exit` consulta `GET /orders/{order}/exit`, codifica únicamente `exit_code`, muestra `requires_check`, limpia sesión/caché/banderas al iniciar otra compra y ofrece regreso configurable de 60/120 s cancelable** | Agregar prueba Playwright del recorrido en T23 |
+| Administración T22 | Acceso y operaciones básicas | **`/admin` tiene login propio, middleware `admin` con 403 para otros roles, CRUD de productos/promociones, desactivación de productos con historial, estadísticas y órdenes paginadas** | Agregar prueba Playwright del recorrido en T23 |
 
 **Qué revisar si el sistema crece:** múltiples sucursales y carritos (tabla de tiendas), sincronización de catálogo con el supermercado, colas para facturación, observabilidad (logs estructurados y métricas), almacenamiento de imágenes, modo sin conexión con cola local de escaneos.
 

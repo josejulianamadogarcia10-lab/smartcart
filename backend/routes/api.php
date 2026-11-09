@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AdminController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\SessionController;
 use Illuminate\Support\Facades\Route;
@@ -28,5 +29,18 @@ Route::prefix('v1')->group(function (): void {
         Route::post('sessions/current/scan', [SessionController::class, 'scan']);
         Route::patch('sessions/current/items/{item}', [SessionController::class, 'update']);
         Route::delete('sessions/current/items/{item}', [SessionController::class, 'destroy']);
+    });
+
+    Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function (): void {
+        Route::get('products', [AdminController::class, 'products']);
+        Route::post('products', [AdminController::class, 'storeProduct']);
+        Route::put('products/{product}', [AdminController::class, 'updateProduct']);
+        Route::delete('products/{product}', [AdminController::class, 'destroyProduct']);
+        Route::get('promotions', [AdminController::class, 'promotions']);
+        Route::post('promotions', [AdminController::class, 'storePromotion']);
+        Route::put('promotions/{promotion}', [AdminController::class, 'updatePromotion']);
+        Route::delete('promotions/{promotion}', [AdminController::class, 'destroyPromotion']);
+        Route::get('orders', [AdminController::class, 'orders']);
+        Route::get('stats', [AdminController::class, 'stats']);
     });
 });
