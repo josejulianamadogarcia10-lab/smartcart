@@ -98,9 +98,15 @@ describe('CheckoutScreen', () => {
         new Response(JSON.stringify(summary), { status: 200 }),
       )
       .mockResolvedValueOnce(
-        new Response(JSON.stringify({ message: 'El NIT no es válido.' }), {
-          status: 422,
-        }),
+        new Response(
+          JSON.stringify({
+            message: 'El NIT no es válido.',
+            errors: { nit: ['El NIT no es válido.'] },
+          }),
+          {
+            status: 422,
+          },
+        ),
       )
       .mockResolvedValueOnce(
         new Response(JSON.stringify({ order }), { status: 201 }),

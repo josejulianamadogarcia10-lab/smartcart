@@ -6,10 +6,16 @@ const tokenKey = 'smartcart.access_token'
 
 export class ApiRequestError extends Error {
   readonly status: number
+  readonly errors?: Record<string, string[]>
 
-  constructor(status: number, message: string) {
+  constructor(
+    status: number,
+    message: string,
+    errors?: Record<string, string[]>,
+  ) {
     super(message)
     this.status = status
+    this.errors = errors
     this.name = 'ApiRequestError'
   }
 }
@@ -53,6 +59,7 @@ export async function apiFetch<T>(
   const makeRequest = (token: string | null) => {
     const headers = new Headers(requestInit.headers)
     headers.set('Content-Type', 'application/json')
+    headers.set('Accept', 'application/json')
     if (token) headers.set('Authorization', `Bearer ${token}`)
     return fetch(`${apiUrl}${path}`, { ...requestInit, headers })
   }
@@ -72,6 +79,7 @@ export async function apiFetch<T>(
     throw new ApiRequestError(
       response.status,
       error.message ?? 'No fue posible completar la solicitud.',
+      error.errors,
     )
   }
   return (await response.json()) as T

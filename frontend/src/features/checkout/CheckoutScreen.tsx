@@ -45,10 +45,15 @@ export function CheckoutScreen() {
           ...(demoMode && forceCheck ? { force_check: true } : {}),
         }),
       }),
-    onSuccess: ({ order }) => navigate('/exit', { state: { order } }),
+    onSuccess: ({ order }) =>
+      navigate('/exit', { state: { orderId: order.id } }),
     onError: (error) => {
       if (error instanceof ApiRequestError && error.status === 422) {
-        setNitError(invoiceType === 'NIT' ? error.message : null)
+        setNitError(
+          invoiceType === 'NIT'
+            ? (error.errors?.nit?.[0] ?? error.message)
+            : null,
+        )
         setPaymentError(
           invoiceType === 'NIT'
             ? null
