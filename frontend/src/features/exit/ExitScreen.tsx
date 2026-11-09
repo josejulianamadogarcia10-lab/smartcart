@@ -1,11 +1,14 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { CheckCircle, ShieldCheck } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { apiFetch, ApiRequestError, tokenStorage } from '../../api/client'
 import { Button } from '../../components/Button'
 import { Card } from '../../components/Card'
 import { TopBar } from '../../components/TopBar'
+import { getExitAutoReturnSeconds } from '../../config/exit'
+import { useDemoStore } from '../../state/demoStore'
 
 interface ExitResponse {
   exit_code: string
@@ -15,12 +18,61 @@ interface ExitResponse {
 export function ExitScreen() {
   const navigate = useNavigate()
   const location = useLocation()
+  const queryClient = useQueryClient()
+  const navigationComplete = useRef(false)
+  const [secondsRemaining, setSecondsRemaining] = useState<number | null>(null)
+  const [autoReturnCancelled, setAutoReturnCancelled] = useState(false)
   const orderId = (location.state as { orderId?: number } | null)?.orderId
   const exitQuery = useQuery({
     queryKey: ['order-exit', orderId],
     queryFn: () => apiFetch<ExitResponse>(`/orders/${orderId}/exit`),
     enabled: Boolean(orderId && tokenStorage.get()),
   })
+
+  const startNewPurchase = useCallback(async () => {
+    if (navigationComplete.current) return
+    navigationComplete.current = true
+
+    try {
+      if (tokenStorage.get()) {
+        await apiFetch('/auth/logout', { method: 'POST', skipRefresh: true })
+      }
+    } catch {
+      // La compra nueva no debe quedar bloqueada por una falla de logout.
+    } finally {
+      useDemoStore.getState().resetDemo()
+      tokenStorage.clear()
+      queryClient.clear()
+      navigate('/', { replace: true })
+    }
+  }, [navigate, queryClient])
+
+  const countdownSeconds =
+    autoReturnCancelled || !exitQuery.data
+      ? null
+      : (secondsRemaining ??
+        getExitAutoReturnSeconds(exitQuery.data.requires_check))
+
+  useEffect(() => {
+    if (countdownSeconds === null) return
+    if (countdownSeconds === 0) {
+      void startNewPurchase()
+      return
+    }
+
+    const timeout = window.setTimeout(() => {
+      setSecondsRemaining((current) =>
+        Math.max(
+          0,
+          (current ??
+            getExitAutoReturnSeconds(exitQuery.data?.requires_check ?? false)) -
+            1,
+        ),
+      )
+    }, 1000)
+
+    return () => window.clearTimeout(timeout)
+  }, [countdownSeconds, exitQuery.data?.requires_check, startNewPurchase])
 
   if (
     exitQuery.error instanceof ApiRequestError &&
@@ -40,7 +92,7 @@ export function ExitScreen() {
             <p className="text-2xl font-bold text-danger">
               No encontramos el código de salida de esta compra.
             </p>
-            <Button className="mt-8" onClick={() => navigate('/')}>
+            <Button className="mt-8" onClick={() => void startNewPurchase()}>
               Volver al inicio
             </Button>
           </Card>
@@ -76,6 +128,32 @@ export function ExitScreen() {
                   </span>
                 </div>
               )}
+              <div className="mt-8 flex flex-wrap items-center gap-4">
+                <Button onClick={() => void startNewPurchase()}>
+                  Nueva compra
+                </Button>
+                {!autoReturnCancelled && countdownSeconds !== null && (
+                  <>
+                    <p className="text-xl font-bold text-muted">
+                      Volviendo al inicio en {countdownSeconds} s
+                    </p>
+                    <Button
+                      variant="secondary"
+                      onClick={() => {
+                        setAutoReturnCancelled(true)
+                        setSecondsRemaining(null)
+                      }}
+                    >
+                      Cancelar regreso
+                    </Button>
+                  </>
+                )}
+                {autoReturnCancelled && (
+                  <p className="text-xl font-bold text-muted">
+                    Regreso automático cancelado.
+                  </p>
+                )}
+              </div>
             </Card>
             <Card className="flex min-h-[650px] flex-col items-center justify-center p-8 text-center">
               <h2 className="text-3xl font-black text-ink">Código de salida</h2>
