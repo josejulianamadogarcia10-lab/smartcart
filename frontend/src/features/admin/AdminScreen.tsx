@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { Search, X } from 'lucide-react'
@@ -864,11 +864,16 @@ function Modal({
   onClose: () => void
   children: ReactNode
 }) {
+  const onCloseRef = useRef(onClose)
+  useEffect(() => {
+    onCloseRef.current = onClose
+  }, [onClose])
+
   useEffect(() => {
     const opener = document.activeElement as HTMLElement | null
     const previousOverflow = document.body.style.overflow
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
+      if (event.key === 'Escape') onCloseRef.current()
     }
     document.body.style.overflow = 'hidden'
     document.addEventListener('keydown', closeOnEscape)
@@ -877,11 +882,12 @@ function Modal({
       document.removeEventListener('keydown', closeOnEscape)
       opener?.focus()
     }
-  }, [onClose])
+  }, [])
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[100] grid place-items-center overflow-y-auto bg-ink/70 p-6"
+      className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-ink/70 p-6"
+      style={{ position: 'fixed', inset: 0, zIndex: 100 }}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose()
       }}
@@ -890,6 +896,11 @@ function Modal({
         role="dialog"
         aria-modal="true"
         className="my-auto max-h-[90vh] w-full max-w-2xl overflow-y-auto"
+        style={{
+          maxHeight: '90vh',
+          width: 'min(100%, 42rem)',
+          overflowY: 'auto',
+        }}
         onMouseDown={(event) => event.stopPropagation()}
       >
         <Card className="p-8">

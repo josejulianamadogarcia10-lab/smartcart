@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "format:check": "prettier --check .",
     "test": "vitest run",
+    "test:e2e": "playwright test",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc -b",
     "preview": "vite preview"
@@ -39,6 +40,7 @@
     "globals": "^17.14.0",
     "jsdom": "^29.1.1",
     "oxlint": "^1.90.0",
+    "playwright": "^1.65.0",
     "prettier": "^3.9.10",
     "tailwindcss": "^4.3.5",
     "typescript": "^5.9.3",
