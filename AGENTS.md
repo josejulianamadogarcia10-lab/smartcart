@@ -508,7 +508,7 @@ Meta: recorrer el flujo completo con la interfaz y el panel de simulación.
 - [x] **T23 (M) Prueba Playwright** del recorrido completo.
 - [x] **T24 (M) Pulido:** accesibilidad (foco visible, contraste, tamaños táctiles), modo quiosco (pantalla completa, sin selección de texto), inactividad, responsive 1024x768.
 - [x] **T25 (S) Guion de demostración** en `docs/demo.md`: pasos exactos, qué botones del panel pulsar, cómo reiniciar, plan B si falla la red.
-- [ ] **T26 (S) Revisión final:** `composer audit`, `npm audit`, limpieza de `console.log`, `APP_DEBUG=false` en la configuración de demo, `README` actualizado.
+- [x] **T26 (S) Revisión final:** `composer audit`, `npm audit`, limpieza de `console.log`, `APP_DEBUG=false` en la configuración de demo, `README` actualizado.
 
 **Definición de terminado del proyecto:** el recorrido completo se ejecuta tres veces seguidas sin errores, con el lector Bluetooth emparejado a la vista y el panel de simulación llevando el escaneo.
 
@@ -565,6 +565,7 @@ Meta: recorrer el flujo completo con la interfaz y el panel de simulación.
 | E2E T23 | Entorno compartido, base demo, entorno aislado | **Playwright levanta backend en 8001 y frontend en 5180 contra `smartcart_test`; exige variables E2E, `DEMO_MODE=true`, artefactos ignorados y pruebas seriales independientes** | Revisar el aislamiento si se automatiza CI |
 | Guion T25 | Documento libre, pasos dispersos | **`docs/demo.md` contiene checklist de 2 minutos, recorridos de 5 y 10 minutos, catálogo verificado, planes B y reinicio protegido de la demo** | Revisar cuando cambien botones o el flujo de presentación |
 | Pulido T24 | Accesibilidad, quiosco e inactividad | **Foco visible global, auditoría axe en las cinco pantallas del cliente, tokens con contraste AA, pantalla completa mediante gesto, bloqueo de selección/context menu solo en cliente y temporizadores configurables con expulsión únicamente si el carrito está vacío** | Revisar soporte de pantalla completa y tiempos si cambia el hardware |
+| Revisión final T26 | Actualizar todo sin romper compatibilidad | **Ejemplos seguros con demo desactivada, CORS documentado sin comodines, `@axe-core/playwright` 4.10.2 para Node 20, auditorías sin cambios mayores y verificación histórica de secretos** | Revisar vulnerabilidades moderadas de desarrollo cuando haya versiones mayores compatibles |
 
 ## 14. Primer mensaje sugerido para el agente
 

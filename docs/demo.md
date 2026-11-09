@@ -2,6 +2,11 @@
 
 Este guion está pensado para una presentación con el frontend en `http://localhost:5173` y el backend de Herd en `https://smartcart-api.test`. Los textos de los botones se verificaron contra la interfaz actual.
 
+Para la demo, configura `DEMO_MODE=true` en el `.env` de `backend/` y
+`VITE_DEMO_MODE=true` en el `.env` de `frontend/`. Los archivos de ejemplo
+mantienen ambos valores en `false`. El entorno E2E usa sus propias variables y
+no reutiliza la base ni el `.env` de la demo.
+
 ## Lista previa de 2 minutos
 
 - [ ] Conectar la computadora a la corriente y comprobar que el lector Bluetooth aparece físicamente instalado.
@@ -107,6 +112,20 @@ Promociones iniciales:
 - **MariaDB caída:** corrige el servicio y reinicia backend/frontend. No ejecutes migraciones destructivas durante la presentación.
 - **Pérdida de red:** no repitas pagos; espera la conexión y reintenta solo la acción indicada por el mensaje.
 - **Navegador cerrado:** abre de nuevo `http://localhost:5173`. El token vive en `sessionStorage`, así que inicia una compra nueva como invitado.
+
+## PreparaciÃ³n final de secretos
+
+Antes de la presentaciÃ³n final, regenera las claves locales desde `backend/` si
+corresponde:
+
+```powershell
+php artisan key:generate
+php artisan jwt:secret
+```
+
+Ambos comandos cierran las sesiones y vuelven invÃ¡lidos los tokens activos. No
+los ejecutes durante la presentaciÃ³n; los secretos permanecen Ãºnicamente en el
+`.env` local.
 
 ## Reinicio seguro de la demo
 

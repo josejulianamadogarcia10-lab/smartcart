@@ -24,6 +24,12 @@ cd frontend
 
 La SPA queda disponible en `http://localhost:5173`.
 
+Para una demo local, define explícitamente `DEMO_MODE=true` en el `.env` de
+`backend/` y `VITE_DEMO_MODE=true` en el `.env` de `frontend/`. Los ejemplos
+versionados dejan ambos valores en `false` por seguridad. El backend acepta
+únicamente el origen indicado por `FRONTEND_URL` (por defecto,
+`http://localhost:5173`); no uses comodines en CORS.
+
 ## Estructura
 
 - `backend/`: API Laravel 12.
@@ -51,6 +57,30 @@ $env:E2E_PHP = 'C:\Users\josej\.config\herd\bin\php.bat'
 cd frontend
 npm run test:e2e
 ```
+
+La suite usa `@axe-core/playwright` **4.10.2**, fijado por compatibilidad con
+Node 20. No se ejecuta como parte de la calidad local de T26; el comando anterior
+queda listo para ejecutarlo después de definir todas las variables E2E.
+
+## Auditoría de dependencias y secretos
+
+`composer audit` no reporta avisos. `npm audit` reporta 10 vulnerabilidades
+moderadas, todas en `devDependencies` y ninguna alta o crítica. Las correcciones
+automáticas disponibles requieren saltos de versión mayor de ESLint y
+TypeScript ESLint, por lo que no se aplican en esta revisión.
+
+Los archivos `.env` y `.env.e2e` están ignorados por Git; los archivos de ejemplo
+no contienen valores reales. Antes de la presentación final puedes regenerar las
+claves locales con:
+
+```powershell
+cd backend
+php artisan key:generate
+php artisan jwt:secret
+```
+
+Estas acciones invalidan las sesiones y tokens activos. No las ejecutes durante
+la demo ni se incluyen en el arranque automático.
 
 No guardes esos valores en archivos versionados. Cada prueba crea su propio invitado y sesión; el backend E2E usa `DEMO_MODE=true` y el frontend `VITE_DEMO_MODE=true`.
 - `docs/`: diseño y documentación del producto.

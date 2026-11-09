@@ -251,8 +251,8 @@ Si `DEMO_MODE=true`, el body puede incluir:
 únicamente con `DEMO_MODE=true`; fuera de ese modo no alteran el flujo de pago.
 
 El panel de simulación del frontend guarda `force_check` y `simulate_failure`
-como banderas de la interfaz. T20 las enviará en el body de checkout con esos
-mismos nombres; no crean endpoints ni modifican el esquema. Reiniciar la demo
+como banderas de la interfaz. El checkout las envía en el body con esos mismos
+nombres; no crean endpoints ni modifican el esquema. Reiniciar la demo
 usa el `POST /sessions` existente para cancelar la sesión activa del dispositivo,
 limpia ambas banderas y vuelve al inicio.
 
@@ -300,6 +300,31 @@ campo cuando el error es de validación; puede omitirse en errores de negocio.
 Otros mensajes útiles son `No tienes una sesión de compra activa.` (404),
 `Este producto ya está en tu carrito.` (422) y
 `El presupuesto debe ser mayor que Q0.00.` (422).
+
+## AdministraciÃ³n
+
+Todas las rutas siguientes requieren un JWT de un usuario con rol `admin`; un
+token de cliente recibe `403`:
+
+```http
+GET    /admin/categories
+GET    /admin/products
+POST   /admin/products
+PUT    /admin/products/{product}
+DELETE /admin/products/{product}
+GET    /admin/promotions
+POST   /admin/promotions
+PUT    /admin/promotions/{promotion}
+DELETE /admin/promotions/{promotion}
+GET    /admin/orders
+GET    /admin/orders/{order}
+GET    /admin/stats
+```
+
+`GET /admin/orders` devuelve compras paginadas; `GET /admin/orders/{order}`
+incluye sus productos, cantidades, subtotal, IVA, total, cÃ³digo de salida y si
+requiriÃ³ revisiÃ³n. `GET /admin/categories` es de solo lectura y alimenta los
+formularios de productos.
 
 ## Convenciones
 
