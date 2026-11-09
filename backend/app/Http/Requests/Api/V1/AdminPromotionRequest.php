@@ -17,8 +17,8 @@ class AdminPromotionRequest extends FormRequest
             'product_id' => ['required', 'integer', 'exists:products,id'],
             'promo_price' => ['required', 'numeric', 'min:0.01'],
             'label' => ['required', 'string', 'max:255'],
-            'starts_at' => ['required', 'date'],
-            'ends_at' => ['required', 'date', 'after:starts_at'],
+            'starts_at' => ['nullable', 'date', 'required_with:ends_at'],
+            'ends_at' => ['nullable', 'date', 'after:starts_at', 'required_with:starts_at'],
             'active' => ['sometimes', 'boolean'],
         ];
     }

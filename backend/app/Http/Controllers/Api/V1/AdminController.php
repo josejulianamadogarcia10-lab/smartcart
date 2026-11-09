@@ -81,9 +81,14 @@ class AdminController extends Controller
 
     public function orders(Request $request): JsonResponse
     {
-        $orders = Order::with('shoppingSession.user')->latest()->paginate(15);
+        $orders = Order::with(['shoppingSession.user', 'items'])->latest()->paginate(15);
 
         return response()->json($orders);
+    }
+
+    public function order(Order $order): JsonResponse
+    {
+        return response()->json(['order' => $order->load('items')]);
     }
 
     public function stats(): JsonResponse

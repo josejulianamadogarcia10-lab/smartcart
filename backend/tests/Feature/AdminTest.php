@@ -95,3 +95,30 @@ it('devuelve estadísticas y compras paginadas', function (): void {
         ->assertOk()->assertJsonPath('data.0.exit_code', 'SC0725')
         ->assertJsonPath('data.0.requires_check', true);
 });
+
+it('devuelve el detalle de compra solo a administradores', function (): void {
+    $order = Order::factory()->create(['subtotal' => '10.00', 'vat' => '1.20', 'total' => '11.20']);
+    OrderItem::factory()->create(['order_id' => $order->id, 'name_snapshot' => 'Leche', 'quantity' => 2, 'line_total' => '11.20']);
+
+    $customer = User::factory()->create(['role' => 'customer']);
+    $customerToken = auth('api')->login($customer);
+    $this->withToken($customerToken)->getJson('/api/v1/admin/orders/'.$order->id)->assertForbidden();
+
+    $admin = User::factory()->create(['role' => 'admin']);
+    $this->withToken(auth('api')->login($admin))->getJson('/api/v1/admin/orders/'.$order->id)
+        ->assertOk()->assertJsonPath('order.items.0.name_snapshot', 'Leche')
+        ->assertJsonPath('order.total', '11.20');
+});
+
+it('permite promociones sin vigencia cuando las fechas son null', function (): void {
+    $product = Product::factory()->create(['price' => '20.00']);
+
+    $this->withToken(adminToken())->postJson('/api/v1/admin/promotions', [
+        'product_id' => $product->id,
+        'promo_price' => '15.00',
+        'label' => 'Oferta sin vigencia',
+        'starts_at' => null,
+        'ends_at' => null,
+    ])->assertCreated()->assertJsonPath('promotion.starts_at', null)
+        ->assertJsonPath('promotion.ends_at', null);
+});

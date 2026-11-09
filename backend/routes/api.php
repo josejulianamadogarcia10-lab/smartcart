@@ -41,6 +41,7 @@ Route::prefix('v1')->group(function (): void {
         Route::put('promotions/{promotion}', [AdminController::class, 'updatePromotion']);
         Route::delete('promotions/{promotion}', [AdminController::class, 'destroyPromotion']);
         Route::get('orders', [AdminController::class, 'orders']);
+        Route::get('orders/{order}', [AdminController::class, 'order']);
         Route::get('stats', [AdminController::class, 'stats']);
     });
 });

@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { Search, X } from 'lucide-react'
 import { apiFetch, ApiRequestError, tokenStorage } from '../../api/client'
 import { Button } from '../../components/Button'
@@ -29,8 +30,8 @@ interface Promotion {
   product_id: number
   promo_price: string
   label: string
-  starts_at: string
-  ends_at: string
+  starts_at: string | null
+  ends_at: string | null
   active: boolean
   product: Product
 }
@@ -48,6 +49,9 @@ interface AdminOrder {
   exit_code: string
   requires_check: boolean
   created_at: string
+  subtotal: string
+  vat: string
+  items: { name_snapshot: string; quantity: number; line_total: string }[]
 }
 interface Paginator {
   data: AdminOrder[]
@@ -141,6 +145,9 @@ export function AdminScreen() {
   const [editingProduct, setEditingProduct] = useState<number | null>(null)
   const [editingPromotion, setEditingPromotion] = useState<number | null>(null)
   const [formOpen, setFormOpen] = useState<'product' | 'promotion' | null>(null)
+  const [productToDeactivate, setProductToDeactivate] =
+    useState<Product | null>(null)
+  const [selectedOrder, setSelectedOrder] = useState<AdminOrder | null>(null)
 
   const adminFetch = <T,>(path: string, init: RequestInit = {}) =>
     apiFetch<T>(path, { ...init, skipRefresh: true })
@@ -241,6 +248,8 @@ export function AdminScreen() {
         body: JSON.stringify({
           ...promotionForm,
           product_id: Number(promotionForm.product_id),
+          starts_at: promotionForm.starts_at || null,
+          ends_at: promotionForm.ends_at || null,
         }),
       })
       setPromotionForm(emptyPromotion)
@@ -259,14 +268,18 @@ export function AdminScreen() {
     }
   }
 
-  const deactivateProduct = async (product: Product) => {
-    if (!window.confirm(`¿Desactivar ${product.name}?`)) return
+  const deactivateProduct = async () => {
+    if (!productToDeactivate) return
     try {
-      await adminFetch(`/admin/products/${product.id}`, { method: 'DELETE' })
+      await adminFetch(`/admin/products/${productToDeactivate.id}`, {
+        method: 'DELETE',
+      })
       setSuccess('Producto desactivado.')
       await loadData()
     } catch (caught) {
       handleError(caught)
+    } finally {
+      setProductToDeactivate(null)
     }
   }
   const togglePromotion = async (promotion: Promotion) => {
@@ -443,7 +456,7 @@ export function AdminScreen() {
                   setFormErrors({})
                   setFormOpen('product')
                 }}
-                onDeactivate={deactivateProduct}
+                onDeactivate={(product) => setProductToDeactivate(product)}
               />
             </Card>
           )}
@@ -470,8 +483,8 @@ export function AdminScreen() {
                     product_id: String(promotion.product_id),
                     promo_price: promotion.promo_price,
                     label: promotion.label,
-                    starts_at: promotion.starts_at.slice(0, 16),
-                    ends_at: promotion.ends_at.slice(0, 16),
+                    starts_at: promotion.starts_at?.slice(0, 16) ?? '',
+                    ends_at: promotion.ends_at?.slice(0, 16) ?? '',
                     active: promotion.active,
                   })
                   setFormErrors({})
@@ -487,6 +500,7 @@ export function AdminScreen() {
               <OrderTable
                 orders={orders}
                 onPage={(page) => void loadData(page)}
+                onSelect={setSelectedOrder}
               />
             </Card>
           )}
@@ -525,6 +539,56 @@ export function AdminScreen() {
               />
             </Modal>
           ) : null}
+          {productToDeactivate ? (
+            <Modal
+              title="Desactivar producto"
+              onClose={() => setProductToDeactivate(null)}
+            >
+              <p className="mt-6 text-xl text-ink">
+                ¿Seguro que deseas desactivar {productToDeactivate.name}?
+              </p>
+              <div className="mt-6 flex justify-end gap-3">
+                <Button
+                  variant="secondary"
+                  onClick={() => setProductToDeactivate(null)}
+                >
+                  Cancelar
+                </Button>
+                <Button onClick={() => void deactivateProduct()}>
+                  Desactivar
+                </Button>
+              </div>
+            </Modal>
+          ) : null}
+          {selectedOrder ? (
+            <Modal
+              title={`Compra ${selectedOrder.exit_code}`}
+              onClose={() => setSelectedOrder(null)}
+            >
+              <div className="mt-6 grid gap-3 text-lg">
+                {selectedOrder.items.map((item) => (
+                  <div
+                    key={`${item.name_snapshot}-${item.quantity}`}
+                    className="flex justify-between border-b border-brand-100 pb-2"
+                  >
+                    <span>
+                      {item.quantity} × {item.name_snapshot}
+                    </span>
+                    <span>Q{item.line_total}</span>
+                  </div>
+                ))}
+                <p>
+                  Subtotal: <strong>Q{selectedOrder.subtotal}</strong>
+                </p>
+                <p>
+                  IVA: <strong>Q{selectedOrder.vat}</strong>
+                </p>
+                <p className="text-2xl font-black">
+                  Total: Q{selectedOrder.total}
+                </p>
+              </div>
+            </Modal>
+          ) : null}
         </div>
       </main>
     </>
@@ -534,20 +598,20 @@ export function AdminScreen() {
 function Summary({ stats }: { stats: Stats }) {
   const max = Math.max(...stats.top_products.map((item) => item.quantity), 1)
   return (
-    <div className="mt-7 grid gap-5 md:grid-cols-3">
-      <Card className="p-6">
+    <div className="mt-7 grid items-start gap-5 md:grid-cols-3">
+      <Card className="h-fit p-5">
         <p className="text-lg text-muted">Ventas totales</p>
         <p className="text-4xl font-black text-brand-700">
           Q{stats.sales_total}
         </p>
       </Card>
-      <Card className="p-6">
+      <Card className="h-fit p-5">
         <p className="text-lg text-muted">Compras</p>
         <p className="text-4xl font-black text-brand-700">
           {stats.orders_count}
         </p>
       </Card>
-      <Card className="p-6 md:col-span-1">
+      <Card className="h-fit p-5">
         <h2 className="text-2xl font-black text-ink">Más vendidos</h2>
         <div className="mt-4 grid gap-4">
           {stats.top_products.length ? (
@@ -557,9 +621,15 @@ function Summary({ stats }: { stats: Stats }) {
                   <span>{item.name}</span>
                   <span>{item.quantity}</span>
                 </div>
-                <div className="mt-1 h-3 rounded-full bg-brand-100">
+                <div
+                  className="mt-1 h-4 w-full rounded-full bg-brand-100"
+                  role="progressbar"
+                  aria-valuenow={item.quantity}
+                  aria-valuemin={0}
+                  aria-valuemax={max}
+                >
                   <div
-                    className="h-3 rounded-full bg-brand-500"
+                    className="h-4 rounded-full bg-brand-500"
                     style={{ width: `${(item.quantity / max) * 100}%` }}
                   />
                 </div>
@@ -661,8 +731,7 @@ function PromotionTable({
               <td className="p-3">Q{promotion.product.price}</td>
               <td className="p-3">Q{promotion.promo_price}</td>
               <td className="p-3">
-                {new Date(promotion.starts_at).toLocaleDateString('es-GT')} –{' '}
-                {new Date(promotion.ends_at).toLocaleDateString('es-GT')}
+                {formatValidity(promotion.starts_at, promotion.ends_at)}
               </td>
               <td className="p-3">
                 <StatusBadge active={promotion.active} />
@@ -691,12 +760,22 @@ function PromotionTable({
     </div>
   )
 }
+function formatValidity(
+  startsAt: string | null,
+  endsAt: string | null,
+): string {
+  if (!startsAt || !endsAt) return 'Sin vigencia'
+  return `${new Date(startsAt).toLocaleDateString('es-GT')} – ${new Date(endsAt).toLocaleDateString('es-GT')}`
+}
+
 function OrderTable({
   orders,
   onPage,
+  onSelect,
 }: {
   orders: Paginator | null
   onPage: (page: number) => void
+  onSelect: (order: AdminOrder) => void
 }) {
   if (!orders)
     return <p className="p-6 text-xl text-muted">Cargando compras…</p>
@@ -711,6 +790,7 @@ function OrderTable({
             <th className="p-3">Método</th>
             <th className="p-3">Salida</th>
             <th className="p-3">Estado</th>
+            <th className="p-3">Detalle</th>
           </tr>
         </thead>
         <tbody>
@@ -724,10 +804,27 @@ function OrderTable({
                 {order.invoice_type}
                 {order.nit ? ` · ${order.nit}` : ''}
               </td>
-              <td className="p-3">{order.payment_method}</td>
+              <td className="p-3">
+                {order.payment_method === 'card'
+                  ? 'Tarjeta'
+                  : order.payment_method === 'fast_checkout'
+                    ? 'Caja rápida'
+                    : order.payment_method}
+              </td>
               <td className="p-3">{order.exit_code}</td>
               <td className="p-3">
-                {order.requires_check && <StatusBadge review />}
+                {order.requires_check ? (
+                  <StatusBadge review />
+                ) : (
+                  <span className="inline-flex rounded-full bg-brand-100 px-3 py-1 text-base font-bold text-brand-800">
+                    Aprobada
+                  </span>
+                )}
+              </td>
+              <td className="p-3">
+                <Button className="text-base" onClick={() => onSelect(order)}>
+                  Ver detalle
+                </Button>
               </td>
             </tr>
           ))}
@@ -767,18 +864,46 @@ function Modal({
   onClose: () => void
   children: ReactNode
 }) {
-  return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-ink/50 p-6">
-      <Card className="max-h-[90vh] w-full max-w-2xl overflow-y-auto p-8">
-        <div className="flex items-center justify-between">
-          <h2 className="text-3xl font-black text-ink">{title}</h2>
-          <button aria-label="Cerrar formulario" onClick={onClose}>
-            <X size={32} />
-          </button>
-        </div>
-        {children}
-      </Card>
-    </div>
+  useEffect(() => {
+    const opener = document.activeElement as HTMLElement | null
+    const previousOverflow = document.body.style.overflow
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose()
+    }
+    document.body.style.overflow = 'hidden'
+    document.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      document.removeEventListener('keydown', closeOnEscape)
+      opener?.focus()
+    }
+  }, [onClose])
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[100] grid place-items-center overflow-y-auto bg-ink/70 p-6"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose()
+      }}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="my-auto max-h-[90vh] w-full max-w-2xl overflow-y-auto"
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        <Card className="p-8">
+          <div className="flex items-center justify-between">
+            <h2 className="text-3xl font-black text-ink">{title}</h2>
+            <button aria-label="Cerrar formulario" onClick={onClose}>
+              <X size={32} />
+            </button>
+          </div>
+          {children}
+        </Card>
+      </div>
+    </div>,
+    document.body,
   )
 }
 function ProductForm({
@@ -932,7 +1057,6 @@ function PromotionForm({
           type="datetime-local"
           value={values.starts_at}
           onChange={(event) => update('starts_at', event.target.value)}
-          required
         />
       </Field>
       <Field label="Fin" error={fieldMessage(errors, 'ends_at')}>
@@ -941,7 +1065,6 @@ function PromotionForm({
           type="datetime-local"
           value={values.ends_at}
           onChange={(event) => update('ends_at', event.target.value)}
-          required
         />
       </Field>
       <Button type="submit" disabled={loading}>
